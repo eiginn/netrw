@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2012 Sep 24
+*pi_netrw.txt*  For Vim version 7.3.  Last change: 2012 Oct 25
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -209,7 +209,7 @@ EXTERNAL APPLICATIONS AND PROTOCOLS			*netrw-externapp* {{{2
 	default, the option arguments for the http-handling commands are: >
 
 		    elinks : "-source >"
-		    links  : "-source >"
+		    links  : "-dump >"
 		    curl   : "-o"
 		    wget   : "-q -O"
 		    fetch  : "-o"
@@ -1606,10 +1606,10 @@ in that it is difficult to tell whether they link to a file or to a
 directory.
 
 To force treatment as a file: use >
-	gd
+	gf
 <
 To force treatment as a directory: use >
-	gf
+	gd
 <
 
 GOING UP							*netrw--* {{{2
@@ -1967,7 +1967,7 @@ The "mT" mapping will apply the command in |g:netrw_ctags| (by default, it is
 netrw will use ssh (see |g:netrw_ssh_cmd|), and so ssh must be available for
 this to work on remote systems.  For your local system, see |ctags| on how to
 get a version.  I myself use hdrtags, currently available at
-http://mysite.verizon.net/astronaut/src/index.html , and have >
+http://www.drchip.org/astronaut/src/index.html , and have >
 
 	let g:netrw_ctags= "hdrtag"
 <
@@ -2856,13 +2856,13 @@ which is loaded automatically at startup (assuming :set nocp).
 
 	1. Get the <Decho.vim> script, available as:
 
-	     http://mysite.verizon.net/astronaut/vim/index.html#DECHO
+	     http://www.drchip.org/astronaut/vim/index.html#DECHO
 	   or
 	     http://vim.sourceforge.net/scripts/script.php?script_id=120
 
 	  It now comes as a "vimball"; if you're using vim 7.0 or earlier,
 	  you'll need to update vimball, too.  See
-	     http://mysite.verizon.net/astronaut/vim/index.html#VIMBALL
+	     http://www.drchip.org/astronaut/vim/index.html#VIMBALL
 
 	2. Edit the <netrw.vim> file by typing: >
 
@@ -2895,6 +2895,15 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v146:	Oct 20, 2012	* (David Kotchan) reported that under Windows,
+				  directories named with unusual characters
+				  such as "#" or "$" were not being listed
+				  properly.
+				* (Kenny Lee) reported that the buffer list
+				  was being populated by netrw buffers.
+				  Netrw will now |:bwipe| netrw buffers
+				  upon editing a file if g:netrw_fastbrowse
+				  is zero and its not in tree listing style.
 	v145:	Apr 05, 2012	* moved some command from a g:netrw_local_...
 				  format to g:netwr_local... format
 				* included some NOTE level messages about

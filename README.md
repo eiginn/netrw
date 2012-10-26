@@ -1,8 +1,8 @@
 netrw (Network Oriented Reading, Writing, and Browsing)
 =====
-Mirror of Dr. Chip's netrw vim plugin for vundle
-http://www.drchip.org/astronaut/vim/index.html#NETRW
-Updated Sep 24, 2012 (v146o)
+Mirror of Dr. Chip's netrw vim plugin for vundle  
+http://www.drchip.org/astronaut/vim/index.html#NETRW  
+Updated Oct 24, 2012 (v146p)
 
 ### From the site: ###
 Supports network-oriented editing with urls. One may read and write files using one of several supported protocols 
