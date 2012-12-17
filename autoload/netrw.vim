@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Oct 25, 2012
-" Version:	146
+" Date:		Nov 29, 2012
+" Version:	147b	ASTRO-ONLY
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2012 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v146"
+let g:loaded_netrw = "v147b"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of netrw needs vim 7.2"
@@ -55,7 +55,7 @@ set cpo&vim
 "   0=note     = s:NOTE
 "   1=warning  = s:WARNING
 "   2=error    = s:ERROR
-"  Oct 24, 2012 : max errnum currently is 91
+"  Nov 24, 2012 : max errnum currently is 91
 fun! netrw#ErrorMsg(level,msg,errnum)
 "  call Dfunc("netrw#ErrorMsg(level=".a:level." msg<".a:msg."> errnum=".a:errnum.") g:netrw_use_errorwindow=".g:netrw_use_errorwindow)
 
@@ -392,7 +392,17 @@ call s:NetrwInit("g:netrw_ssh_browse_reject", '^total\s\+\d\+$')
 call s:NetrwInit("g:netrw_use_noswf"        , 0)
 " Default values - t-w ---------- {{{3
 call s:NetrwInit("g:netrw_timefmt","%c")
-call s:NetrwInit("g:netrw_xstrlen",0)
+if !exists("g:netrw_xstrlen")
+ if exists("g:Align_xstrlen")
+  let g:netrw_xstrlen= g:Align_xstrlen
+ elseif exists("g:drawit_xstrlen")
+  let g:netrw_xstrlen= g:drawit_xstrlen
+ elseif &enc == "latin1" || !has("multi_byte")
+  let g:drawit_xstrlen= 0
+ else
+  let g:drawit_xstrlen= 1
+ endif
+endif
 call s:NetrwInit("g:NetrwTopLvlMenu","Netrw.")
 call s:NetrwInit("g:netrw_win95ftp",1)
 call s:NetrwInit("g:netrw_winsize",50)
@@ -2441,6 +2451,10 @@ endfun
 "    6: (user: <mB>)   delete bookmark
 fun! s:NetrwBookHistHandler(chg,curdir)
 "  call Dfunc("s:NetrwBookHistHandler(chg=".a:chg." curdir<".a:curdir.">) cnt=".v:count." histcnt=".g:netrw_dirhist_cnt." histmax=".g:netrw_dirhistmax)
+  if !exists("g:netrw_dirhistmax") || g:netrw_dirhistmax <= 0
+   "  call Dret("s:NetrwBookHistHandler - suppressed due to g:netrw_dirhistmax")
+   return
+  endif
 
   let ykeep= @@
   if a:chg == 0
@@ -2600,6 +2614,10 @@ endfun
 "                      Sister function: s:NetrwBookHistSave()
 fun! s:NetrwBookHistRead()
 "  call Dfunc("s:NetrwBookHistRead()")
+  if !exists("g:netrw_dirhistmax") || g:netrw_dirhistmax <= 0
+   "  call Dret("s:NetrwBookHistRead - suppressed due to g:netrw_dirhistmax")
+   return
+  endif
   let ykeep= @@
   if !exists("s:netrw_initbookhist")
    let home    = s:NetrwHome()
@@ -2629,7 +2647,7 @@ endfun
 "                      be unreliable for long-term storage
 fun! s:NetrwBookHistSave()
 "  call Dfunc("s:NetrwBookHistSave() dirhistmax=".g:netrw_dirhistmax)
-  if g:netrw_dirhistmax <= 0
+  if !exists("g:netrw_dirhistmax") || g:netrw_dirhistmax <= 0
 "   call Dret("s:NetrwBookHistSave : dirhistmax=".g:netrw_dirhistmax)
    return
   endif
@@ -3422,7 +3440,7 @@ fun! s:NetrwBookmarkMenu()
    endif
 
    " show bookmarked places
-   if exists("g:netrw_bookmarklist") && g:netrw_bookmarklist != []
+   if exists("g:netrw_bookmarklist") && g:netrw_bookmarklist != [] && g:netrw_dirhistmax > 0
     let cnt= 1
     for bmd in g:netrw_bookmarklist
 "     call Decho('sil! menu '.g:NetrwMenuPriority.".2.".cnt." ".g:NetrwTopLvlMenu.'Bookmark.'.bmd.'	:e '.bmd)
@@ -5960,10 +5978,14 @@ fun! s:NetrwMenu(domenu)
     exe 'sil! menu '.g:NetrwMenuPriority.'.5     '.g:NetrwTopLvlMenu.'-Sep1-	:'
     exe 'sil! menu '.g:NetrwMenuPriority.'.6     '.g:NetrwTopLvlMenu.'Go\ Up\ Directory<tab>-	-'
     exe 'sil! menu '.g:NetrwMenuPriority.'.7     '.g:NetrwTopLvlMenu.'Apply\ Special\ Viewer<tab>x	x'
-    exe 'sil! menu '.g:NetrwMenuPriority.'.8.1   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.Bookmark\ Current\ Directory<tab>mb	mb'
-    exe 'sil! menu '.g:NetrwMenuPriority.'.8.4   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.Goto\ Prev\ Dir\ (History)<tab>u	u'
-    exe 'sil! menu '.g:NetrwMenuPriority.'.8.5   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.Goto\ Next\ Dir\ (History)<tab>U	U'
-    exe 'sil! menu '.g:NetrwMenuPriority.'.8.6   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.List<tab>qb	qb'
+    if g:netrw_dirhistmax > 0
+     exe 'sil! menu '.g:NetrwMenuPriority.'.8.1   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.Bookmark\ Current\ Directory<tab>mb	mb'
+     exe 'sil! menu '.g:NetrwMenuPriority.'.8.4   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.Goto\ Prev\ Dir\ (History)<tab>u	u'
+     exe 'sil! menu '.g:NetrwMenuPriority.'.8.5   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.Goto\ Next\ Dir\ (History)<tab>U	U'
+     exe 'sil! menu '.g:NetrwMenuPriority.'.8.6   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History.List<tab>qb	qb'
+    else
+     exe 'sil! menu '.g:NetrwMenuPriority.'.8   '.g:NetrwTopLvlMenu.'Bookmarks\ and\ History	:echo "(disabled)"'."\<cr>"
+    endif
     exe 'sil! menu '.g:NetrwMenuPriority.'.9.1   '.g:NetrwTopLvlMenu.'Browsing\ Control.Edit\ File\ Hiding\ List<tab><ctrl-h>'."	\<c-h>'"
     exe 'sil! menu '.g:NetrwMenuPriority.'.9.2   '.g:NetrwTopLvlMenu.'Browsing\ Control.Edit\ Sorting\ Sequence<tab>S	S'
     exe 'sil! menu '.g:NetrwMenuPriority.'.9.3   '.g:NetrwTopLvlMenu.'Browsing\ Control.Quick\ Hide/Unhide\ Dot\ Files<tab>'."gh	gh"
@@ -9204,7 +9226,7 @@ endfun
 
 " ---------------------------------------------------------------------
 " s:Strlen: this function returns the length of a string, even if its {{{2
-"           using two-byte etc characters.
+"           using multiple-byte characters.
 "           Solution from Nicolai Weibull, vim docs (:help strlen()), Tony Mechelynck,
 "           and a bit from me.
 "           if g:netrw_xstrlen is zero (default), then the builtin strlen() function is used.
@@ -9231,6 +9253,7 @@ fun! s:Strlen(x)
    call setline(line("."),a:x)
    let ret= virtcol("$") - 1
    keepj d
+   keepj norm! k
    let &mod= modkeep
 
   else

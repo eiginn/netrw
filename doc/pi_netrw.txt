@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2012 Oct 25
+*pi_netrw.txt*  For Vim version 7.3.  Last change: 2012 Nov 29
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -2895,6 +2895,18 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v147:	Nov 24, 2012	* (James McCoy) Even with g:netrw_dirhistmax
+				  at zero, the .vim/ directory would be
+				  created to support history/bookmarks.  I've
+				  gone over netrw to suppress history and
+				  bookmarking when g:netrw_dirhistmax is zero.
+				  For instance, the menus will display
+				  (disabled) when attempts to use
+				  bookmarks/history are made.
+		Nov 29, 2012	* (Kim Jang-hwan) reported that with g:Align_xstrlen
+				  set to 3 that the cursor was moved (linewise)
+				  after invocation.  This problem also
+				  afflicted netrw.  (see |g:netrw_xstrlen|) Fixed.
 	v146:	Oct 20, 2012	* (David Kotchan) reported that under Windows,
 				  directories named with unusual characters
 				  such as "#" or "$" were not being listed
