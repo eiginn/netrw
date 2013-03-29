@@ -1,12 +1,12 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2012 Nov 29
+*pi_netrw.txt*  For Vim version 7.3.  Last change: 2013 Mar 18
 
-	    -----------------------------------------------------
-	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
-	    -----------------------------------------------------
-Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
+	    ------------------------------------------------
+	    NETRW REFERENCE MANUAL    by Charles E. Campbell
+	    ------------------------------------------------
+Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 
-Copyright: Copyright (C) 1999-2012 Charles E Campbell, Jr    *netrw-copyright*
+Copyright: Copyright (C) 1999-2013 Charles E Campbell    *netrw-copyright*
 	The VIM LICENSE applies to the files in this package, including
 	netrw.vim, pi_netrw.txt, netrwFileHandlers.vim, netrwSettings.vim, and
 	syntax/netrw.vim.  Like anything else that's free, netrw.vim and its
@@ -142,7 +142,7 @@ and has lines resembling >
 <
 Windows' ftp doesn't support .netrc; however, one may have in one's .vimrc:  >
 
-	let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\Myself\MACHINE'
+   let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\Myself\MACHINE'
 <
 Netrw will substitute the host's machine name for MACHINE from the url it is
 attempting to open, and so one may specify >
@@ -282,7 +282,7 @@ SOURCING					*netrw-source* {{{2
 	:Nsource "scp://[user@]machine[[:#]port]/path"	uses scp
 	:Nsource "sftp://[user@]machine/path"		uses sftp
 
-DIRECTORY LISTING				*netrw-trailingslash* *netrw-dirlist* {{{2
+DIRECTORY LISTING			*netrw-trailingslash* *netrw-dirlist* {{{2
 
 	One may browse a directory to get a listing by simply attempting to
 	edit the directory: >
@@ -538,8 +538,8 @@ netrw will substitute the current machine name requested for ftp connections
 for MACHINE.  Hence one can have multiple machine.ftp files containing login
 and password for ftp.  Example: >
 
-	let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\Myself\MACHINE'
-	vim ftp://myhost.somewhere.net/
+    let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\Myself\MACHINE'
+    vim ftp://myhost.somewhere.net/
 will use a file >
 	C:\Users\Myself\myhost.ftp
 <
@@ -1086,8 +1086,8 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	<2-leftmouse>	(gvim only) when:
 	                 * in a netrw-selected file, AND
 		         * |g:netrw_retmap| == 1     AND
-		         * the user doesn't already have a <2-leftmouse> mapping
-			   defined before netrw is autoloaded,
+		         * the user doesn't already have a <2-leftmouse>
+			   mapping defined before netrw is autoloaded,
 			then a double clicked leftmouse button will return
 			to the netrw browser window.  See |g:netrw_retmap|.
 	<s-leftmouse>	(gvim only) like mf, will mark files
@@ -1674,7 +1674,7 @@ As a quick shortcut, one may press >
 to toggle between hiding files which begin with a period (dot) and not hiding
 them.
 
-Associated setting variable: |g:netrw_list_hide|
+Associated setting variable: |g:netrw_list_hide|  |g:netrw_hide|
 Associated topics: |netrw-a| |netrw-ctrl-h| |netrw-mh|
 
 IMPROVING BROWSING			*netrw-listhack* *netrw-ssh-hack* {{{2
@@ -1989,13 +1989,15 @@ MARKED FILES: SETTING THE TARGET DIRECTORY			*netrw-mt* {{{2
 
 Set the marked file copy/move-to target (see |netrw-mc| and |netrw-mm|):
 
-  * if the cursor is atop a file name, then the netrw window's currently
+  * If the cursor is atop a file name, then the netrw window's currently
     displayed directory is used for the copy/move-to target.
 
-  * also, if the cursor is in the banner, then the netrw window's currently
+  * Also, if the cursor is in the banner, then the netrw window's currently
     displayed directory is used for the copy/move-to target.
+    Unless the target already is the current directory.  In which case,
+    remove the target.
 
-  * however, if the cursor is atop a directory name, then that directory is
+  * However, if the cursor is atop a directory name, then that directory is
     used for the copy/move-to target
 
 There is only one copy/move-to target per vim session; ie. the target is a
@@ -2020,21 +2022,21 @@ your browsing preferences.  (see also: |netrw-settings|)
    ---				-----------
    Var				Explanation
    ---				-----------
-< *g:netrw_alto*		  change from above splitting to below splitting
+< *g:netrw_alto*		change from above splitting to below splitting
 				by setting this variable (see |netrw-o|)
 				 default: =&sb           (see |'sb'|)
 
-  *g:netrw_altv*		  change from left splitting to right splitting
+  *g:netrw_altv*		change from left splitting to right splitting
 				by setting this variable (see |netrw-v|)
 				 default: =&spr          (see |'spr'|)
 
-  *g:netrw_banner*		  enable/suppress the banner
+  *g:netrw_banner*		enable/suppress the banner
 				=0: suppress the banner
 				=1: banner is enabled (default)
 				NOTE: suppressing the banner is a new feature
 				which may cause problems.
 
-  *g:netrw_browse_split*	  when browsing, <cr> will open the file by:
+  *g:netrw_browse_split*	when browsing, <cr> will open the file by:
 				=0: re-using the same window
 				=1: horizontally splitting the window first
 				=2: vertically   splitting the window first
@@ -2044,7 +2046,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				    to get vertical splitting instead of
 				    horizontal splitting.
 
-  *g:netrw_browsex_viewer*	  specify user's preference for a viewer: >
+  *g:netrw_browsex_viewer*	specify user's preference for a viewer: >
 					"kfmclient exec"
 					"gnome-open"
 <				If >
@@ -2053,15 +2055,15 @@ your browsing preferences.  (see also: |netrw-settings|)
 				a script/function to handle the given
 				extension.  (see |netrw_filehandler|).
 
-  *g:netrw_chgperm*		  Unix/Linux: "chmod PERM FILENAME"
+  *g:netrw_chgperm*		Unix/Linux: "chmod PERM FILENAME"
 				Windows:    "cacls FILENAME /e /p PERM"
 				Used to change access permission for a file.
 
-  *g:netrw_compress*		  ="gzip"
+  *g:netrw_compress*		="gzip"
 				    Will compress marked files with this
 				    command
 
-  *g:Netrw_corehandler*		  Allows one to specify something additional
+  *g:Netrw_corehandler*		Allows one to specify something additional
 				to do when handling <core> files via netrw's
 				browser's "x" command (see |netrw-x|).  If
 				present, g:Netrw_corehandler specifies
@@ -2070,10 +2072,11 @@ your browsing preferences.  (see also: |netrw-settings|)
 				is required its holding a function reference)
 
 
-  *g:netrw_ctags*		  ="ctags"
-				The default external program used to create tags
+  *g:netrw_ctags*		="ctags"
+				The default external program used to create
+				tags
 
-  *g:netrw_cursor*		  = 2 (default)
+  *g:netrw_cursor*		= 2 (default)
   				This option controls the use of the
 				|'cursorline'| (cul) and |'cursorcolumn'|
 				(cuc) settings by netrw:
@@ -2091,7 +2094,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				  cul   : |'cursorline'|  locally set
 				  cuc   : |'cursorcolumn'| locally set
 
-  *g:netrw_decompress*		  = { ".gz" : "gunzip" ,
+  *g:netrw_decompress*		= { ".gz"  : "gunzip" ,
 				    ".bz2" : "bunzip2" ,
 				    ".zip" : "unzip" ,
 				    ".tar" : "tar -xf"}
@@ -2112,7 +2115,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				    1: warnings
 				    2: errors
 
-  *g:netrw_fastbrowse*		  =0: slow speed directory browsing;
+  *g:netrw_fastbrowse*		=0: slow speed directory browsing;
 				    never re-uses directory listings,
 				    always obtains directory listings.
 				=1: medium speed directory browsing;
@@ -2136,10 +2139,10 @@ your browsing preferences.  (see also: |netrw-settings|)
 				trading off accuracy (ie. up-to-date listing)
 				versus speed.
 
-  *g:netrw_fname_escape*	  =' ?&;%'
+  *g:netrw_fname_escape*	=' ?&;%'
 				Used on filenames before remote reading/writing
 
-  *g:netrw_ftp_browse_reject*	  ftp can produce a number of errors and warnings
+  *g:netrw_ftp_browse_reject*	ftp can produce a number of errors and warnings
 				that can show up as "directories" and "files"
 				in the listing.  This pattern is used to
 				remove such embedded messages.  By default its
@@ -2152,19 +2155,19 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 : connect to address [0-9a-fA-F:]*
 				 : No route to host$'
 
-  *g:netrw_ftp_list_cmd*	  options for passing along to ftp for directory
+  *g:netrw_ftp_list_cmd*	options for passing along to ftp for directory
 				listing.  Defaults:
 				 unix or g:netrw_cygwin set: : "ls -lF"
 				 otherwise                     "dir"
 
 
-  *g:netrw_ftp_sizelist_cmd*	  options for passing along to ftp for directory
+  *g:netrw_ftp_sizelist_cmd*	options for passing along to ftp for directory
 				listing, sorted by size of file.
 				Defaults:
 				 unix or g:netrw_cygwin set: : "ls -slF"
 				 otherwise                     "dir"
 
-  *g:netrw_ftp_timelist_cmd*	  options for passing along to ftp for directory
+  *g:netrw_ftp_timelist_cmd*	options for passing along to ftp for directory
 				listing, sorted by time of last modification.
 				Defaults:
 				 unix or g:netrw_cygwin set: : "ls -tlF"
@@ -2175,61 +2178,64 @@ your browsing preferences.  (see also: |netrw-settings|)
 				These characters in directory names are
 				escaped before applying glob()
 
-  *g:netrw_hide*		  if true, the hiding list is used
+  *g:netrw_hide*		Controlled by the "a" map (see |netrw-a|)
+				=0 : show all
+				=1 : show not-hidden files
+				=2 : show hidden files only
 				 default: =0
 
-  *g:netrw_home*		  The home directory for where bookmarks and
+  *g:netrw_home*		The home directory for where bookmarks and
 				history are saved (as .netrwbook and
 				.netrwhist).
 				 default: the first directory on the
 				         |'runtimepath'|
 
-  *g:netrw_keepdir*		  =1 (default) keep current directory immune from
+  *g:netrw_keepdir*		=1 (default) keep current directory immune from
 				   the browsing directory.
 				=0 keep the current directory the same as the
 				   browsing directory.
 				The current browsing directory is contained in
 				b:netrw_curdir (also see |netrw-c|)
 
-  *g:netrw_list_cmd*		  command for listing remote directories
+  *g:netrw_list_cmd*		command for listing remote directories
 				 default: (if ssh is executable)
 				          "ssh HOSTNAME ls -FLa"
 
-  *g:netrw_liststyle*		  Set the default listing style:
+  *g:netrw_liststyle*		Set the default listing style:
                                 = 0: thin listing (one file per line)
                                 = 1: long listing (one file per line with time
 				     stamp information and file size)
 				= 2: wide listing (multiple files in columns)
 				= 3: tree style listing
-  *g:netrw_list_hide*		  comma separated pattern list for hiding files
+  *g:netrw_list_hide*		comma separated pattern list for hiding files
 				Patterns are regular expressions (see |regexp|)
 				Example: let g:netrw_list_hide= '.*\.swp$'
 				 default: ""
 
-  *g:netrw_localcopycmd*	  ="cp" Linux/Unix/MacOS/Cygwin
+  *g:netrw_localcopycmd*	="cp" Linux/Unix/MacOS/Cygwin
 				="copy" Windows
 				Copies marked files (|netrw-mf|) to target
 				directory (|netrw-mt|, |netrw-mc|)
 
-  *g:netrw_localmovecmd*	  ="mv" Linux/Unix/MacOS/Cygwin
+  *g:netrw_localmovecmd*	="mv" Linux/Unix/MacOS/Cygwin
 				="move" Windows
 				Moves marked files (|netrw-mf|) to target
 				directory (|netrw-mt|, |netrw-mm|)
 
-  *g:netrw_localmkdir*		  command for making a local directory
+  *g:netrw_localmkdir*		command for making a local directory
 				 default: "mkdir"
 
-  *g:netrw_localrmdir*		  remove directory command (rmdir)
+  *g:netrw_localrmdir*		remove directory command (rmdir)
 				 default: "rmdir"
 
-  *g:netrw_maxfilenamelen*	  =32 by default, selected so as to make long
+  *g:netrw_maxfilenamelen*	=32 by default, selected so as to make long
 				    listings fit on 80 column displays.
 				If your screen is wider, and you have file
 				or directory names longer than 32 bytes,
 				you may set this option to keep listings
 				columnar.
 
-  *g:netrw_mkdir_cmd*		  command for making a remote directory
+  *g:netrw_mkdir_cmd*		command for making a remote directory
 				via ssh  (also see |g:netrw_remote_mkdir|)
 				 default: "ssh USEPORT HOSTNAME mkdir"
 
@@ -2246,11 +2252,11 @@ your browsing preferences.  (see also: |netrw-settings|)
 				evaluation will be suppressed
 				(see |'ballooneval'|)
 
-  *g:netrw_remote_mkdir*	  command for making a local directory
+  *g:netrw_remote_mkdir*	command for making a local directory
 				via ftp  (also see |g:netrw_mkdir_cmd|)
 				 default: "mkdir"
 
-  *g:netrw_retmap*		  if it exists and is set to one, then:
+  *g:netrw_retmap*		if it exists and is set to one, then:
 				 * if in a netrw-selected file, AND
 				 * no normal-mode <2-leftmouse> mapping exists,
 				then the <2-leftmouse> will be mapped for easy
@@ -2269,22 +2275,22 @@ your browsing preferences.  (see also: |netrw-settings|)
 
 				  default: =0
 
-  *g:netrw_rm_cmd*		  command for removing files
+  *g:netrw_rm_cmd*		command for removing files
 				 default: "ssh USEPORT HOSTNAME rm"
 
-  *g:netrw_rmdir_cmd*		  command for removing directories
+  *g:netrw_rmdir_cmd*		command for removing directories
 				 default: "ssh USEPORT HOSTNAME rmdir"
 
-  *g:netrw_rmf_cmd*		   command for removing softlinks
+  *g:netrw_rmf_cmd*		command for removing softlinks
 				 default: "ssh USEPORT HOSTNAME rm -f"
 
-  *g:netrw_sort_by*		  sort by "name", "time", or "size"
+  *g:netrw_sort_by*		sort by "name", "time", or "size"
 				 default: "name"
 
-  *g:netrw_sort_direction*	  sorting direction: "normal" or "reverse"
+  *g:netrw_sort_direction*	sorting direction: "normal" or "reverse"
 				 default: "normal"
 
-  *g:netrw_sort_options*	  sorting is done using |:sort|; this
+  *g:netrw_sort_options*	sorting is done using |:sort|; this
 				variable's value is appended to the
 				sort command.  Thus one may ignore case,
 				for example, with the following in your
@@ -2292,14 +2298,14 @@ your browsing preferences.  (see also: |netrw-settings|)
 					let g:netrw_sort_options="i"
 <				 default: ""
 
-  *g:netrw_sort_sequence*	  when sorting by name, first sort by the
+  *g:netrw_sort_sequence*	when sorting by name, first sort by the
 				comma-separated pattern sequence.  Note that
 				the filigree added to indicate filetypes
 				should be accounted for in your pattern.
 				 default: '[\/]$,*,\.bak$,\.o$,\.h$,
 				           \.info$,\.swp$,\.obj$'
 
-  *g:netrw_special_syntax*	  If true, then certain files will be shown
+  *g:netrw_special_syntax*	If true, then certain files will be shown
 				using special syntax in the browser:
 
 					netrwBak     : *.bak
@@ -2321,12 +2327,12 @@ your browsing preferences.  (see also: |netrw-settings|)
 <				into one's <.vimrc> to use one's own
 				preferences.
 
-  *g:netrw_ssh_cmd*		  One may specify an executable command
+  *g:netrw_ssh_cmd*		One may specify an executable command
 				to use instead of ssh for remote actions
 				such as listing, file removal, etc.
 				 default: ssh
 
-  *g:netrw_ssh_browse_reject*	  ssh can sometimes produce unwanted lines,
+  *g:netrw_ssh_browse_reject*	ssh can sometimes produce unwanted lines,
 				messages, banners, and whatnot that one doesn't
 				want masquerading as "directories" and "files".
 				Use this pattern to remove such embedded
@@ -2334,11 +2340,11 @@ your browsing preferences.  (see also: |netrw-settings|)
 					 '^total\s\+\d\+$'
 
 
-  *g:netrw_tmpfile_escape*	  =' &;'
+  *g:netrw_tmpfile_escape*	=' &;'
 				escape() is applied to all temporary files
 				to escape these characters.
 
-  *g:netrw_timefmt*		  specify format string to vim's strftime().
+  *g:netrw_timefmt*		specify format string to vim's strftime().
 				The default, "%c", is "the preferred date
 				and time representation for the current
 				locale" according to my manpage entry for
@@ -2348,7 +2354,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 " %a %Y-%m-%d  %I-%M-%S %p"
 				 default: "%c"
 
-  *g:netrw_use_noswf*		  netrw normally avoids writing swapfiles
+  *g:netrw_use_noswf*		netrw normally avoids writing swapfiles
 				for browser buffers.  However, under some
 				systems this apparently is causing nasty
 				ml_get errors to appear; if you're getting
@@ -2356,7 +2362,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				  let g:netrw_use_noswf= 0
 				in your .vimrc.
 
-  *g:netrw_winsize*		  specify initial size of new windows made with
+  *g:netrw_winsize*		specify initial size of new windows made with
 				"o" (see |netrw-o|), "v" (see |netrw-v|),
 				|:Hexplore| or |:Vexplore|.  The g:netrw_winsize
 				is an integer describing the percentage of the
@@ -2367,7 +2373,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				or columns will be used for the new window.
 				 default: 50  (for 50%)
 
-  *g:netrw_xstrlen*		  Controls how netrw computes string lengths,
+  *g:netrw_xstrlen*		Controls how netrw computes string lengths,
 				including multi-byte characters' string
 				length. (thanks to N Weibull, T Mechelynck)
 				=0: uses Vim's built-in strlen()
@@ -2383,7 +2389,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				    immediately preceded by lam, one
 				    otherwise, etc)
 
-  *g:NetrwTopLvlMenu*		  This variable specifies the top level
+  *g:NetrwTopLvlMenu*		This variable specifies the top level
 				menu name; by default, it's "Netrw.".  If
 				you wish to change this, do so in your
 				.vimrc.
@@ -2620,9 +2626,9 @@ Associated setting variables:	|g:netrw_chgwin|
 	P5. My times come up oddly in local browsing
 
 		Does your system's strftime() accept the "%c" to yield dates
-		such as "Sun Apr 27 11:49:23 1997"?  If not, do a "man strftime"
-		and find out what option should be used.  Then put it into
-		your |.vimrc|: >
+		such as "Sun Apr 27 11:49:23 1997"?  If not, do a
+		"man strftime" and find out what option should be used.  Then
+		put it into your |.vimrc|: >
 
 			let g:netrw_timefmt= "%X"  (where X is the option)
 <
@@ -2903,10 +2909,27 @@ which is loaded automatically at startup (assuming :set nocp).
 				  For instance, the menus will display
 				  (disabled) when attempts to use
 				  bookmarks/history are made.
-		Nov 29, 2012	* (Kim Jang-hwan) reported that with g:Align_xstrlen
-				  set to 3 that the cursor was moved (linewise)
-				  after invocation.  This problem also
-				  afflicted netrw.  (see |g:netrw_xstrlen|) Fixed.
+		Nov 29, 2012	* (Kim Jang-hwan) reported that with
+				  g:Align_xstrlen set to 3 that the cursor was
+				  moved (linewise) after invocation.  This
+				  problem also afflicted netrw.
+				  (see |g:netrw_xstrlen|) Fixed.
+		Jan 21, 2013	* (mattn) provided a patch to insert some
+				  endifs needed with the code implementing
+				  |netrw-O|.
+		Jan 24, 2013	* (John Szakmeister) found that remote file
+				  editing resulted in filetype options being
+				  overwritten by NetrwOptionRestore().  I
+				  moved filetype detect from NetrwGetFile()
+				  to NetrwOptionRestore.
+		Feb 17, 2013	* (Yukhiro Nakadaira) provided a patch
+				  correcting some syntax errors.
+		Feb 28, 2013	* (Ingo Karkat) provided a patch preventing
+				  receipt of an |E95| when revisiting a
+				  file://... style url.
+		Mar 18, 2013	* (Gary Johnson) pointed out that changing
+				  cedit to <Esc> caused problems with visincr;
+				  the cedit setting is now bypassed in netrw too.
 	v146:	Oct 20, 2012	* (David Kotchan) reported that under Windows,
 				  directories named with unusual characters
 				  such as "#" or "$" were not being listed
