@@ -21,13 +21,22 @@ if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
 "DechoTabOn
-let g:loaded_netrwPlugin = "v149d"
+let g:loaded_netrwPlugin = "v150a"
 if v:version < 702
- echohl WarningMsg | echo "***netrw*** you need vim version 7.2 for this version of netrw" | echohl None
+ echohl WarningMsg
+ echo "***warning*** you need vim version 7.2 for this version of netrw"
+ echohl None
+ finish
+endif
+if v:version < 703 || (v:version == 703 && !has("patch465"))
+ echohl WarningMsg
+ echo "***warning*** this version of netrw needs vim 7.3.465 or later"
+ echohl Normal
  finish
 endif
 let s:keepcpo = &cpo
 set cpo&vim
+"DechoTabOn
 
 " ---------------------------------------------------------------------
 " Public Interface: {{{1
