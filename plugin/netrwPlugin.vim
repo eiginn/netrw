@@ -21,7 +21,7 @@ if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
 "DechoTabOn
-let g:loaded_netrwPlugin = "v150a"
+let g:loaded_netrwPlugin = "v150e"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** you need vim version 7.2 for this version of netrw"
@@ -91,7 +91,7 @@ if !exists("g:netrw_nogx") && maparg('gx','n') == ""
  if !hasmapto('<Plug>NetrwBrowseX')
   nmap <unique> gx <Plug>NetrwBrowseX
  endif
- nno <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand("<cWORD>"),0)<cr>
+ nno <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand("<cfile>"),0)<cr>
 endif
 
 " ---------------------------------------------------------------------

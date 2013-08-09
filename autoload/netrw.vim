@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Jun 05, 2013
-" Version:	150a	ASTRO-ONLY
+" Date:		Jul 19, 2013
+" Version:	150e	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2012 Charles E. Campbell {{{1
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v150a"
+let g:loaded_netrw = "v150e"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -490,7 +490,7 @@ fun! s:NetrwOptionSave(vt)
 "   call Dret("s:NetrwOptionSave : options already saved")
    return
   endif
-"  call Decho("fo=".&fo.(exists("+acd")? " acd=".&acd : " acd doesn't exist")." diff=".&l:diff)
+"  call Decho("(s:NetrwOptionSave) prior to save: fo=".&fo.(exists("+acd")? " acd=".&acd : " acd doesn't exist")." diff=".&l:diff)
 
   " Save current settings and current directory
 "  call Decho("saving current settings and current directory")
@@ -545,7 +545,7 @@ fun! s:NetrwOptionSave(vt)
   if &go =~# 'a' | sil! let {a:vt}netrw_regstar = @* | endif
   sil! let {a:vt}netrw_regslash= @/
 
-"  call Dret("s:NetrwOptionSave : tab#".tabpagenr()." win#".winnr()." buf#".bufnr("%")." modified=".&modified." modifiable=".&modifiable." readonly=".&readonly)
+"  call Dret("s:NetrwOptionSave : tab#".tabpagenr()." win#".winnr()." buf#".bufnr("%")." modified=".&modified." modifiable=".&modifiable." readonly=".&readonly." fo=".&fo)
 endfun
 
 " ------------------------------------------------------------------------
@@ -675,7 +675,7 @@ endfun
 "                     Use  s:NetrwOptionRestore() to restore user settings
 fun! s:NetrwSafeOptions()
 "  call Dfunc("s:NetrwSafeOptions() win#".winnr()." buf#".bufnr("%")."<".bufname(bufnr("%"))."> winnr($)=".winnr("$"))
-"  call Decho("win#".winnr()."'s ft=".&ft)
+"  call Decho("(s:NetrwSafeOptions) win#".winnr()."'s ft=".&ft)
   if exists("+acd") | setl noacd | endif
   setl noai
   setl noaw
@@ -690,7 +690,7 @@ fun! s:NetrwSafeOptions()
   setl cpo-=a
   setl cpo-=A
   setl fo=nroql2
-   setl nohid
+  setl nohid
   setl noim
   setl isk+=@ isk+=* isk+=/
   setl magic
@@ -706,13 +706,13 @@ fun! s:NetrwSafeOptions()
   call s:NetrwCursor()
 
   " allow the user to override safe options
-"  call Decho("ft<".&ft."> ei=".&ei)
+"  call Decho("(s:NetrwSafeOptions) ft<".&ft."> ei=".&ei)
   if &ft == "netrw"
-"   call Decho("do any netrw FileType autocmds (doau FileType netrw)")
+"   call Decho("(s:NetrwSafeOptions) do any netrw FileType autocmds (doau FileType netrw)")
    sil! keepalt keepj doau FileType netrw
   endif
 
-"  call Decho("fo=".&fo.(exists("+acd")? " acd=".&acd : " acd doesn't exist")." bh=".&l:bh)
+"  call Decho("(s:NetrwSafeOptions) fo=".&fo.(exists("+acd")? " acd=".&acd : " acd doesn't exist")." bh=".&l:bh)
 "  call Dret("s:NetrwSafeOptions")
 endfun
 
@@ -727,7 +727,7 @@ endfun
 "                      * If Hexplore or Vexplore, then this will override
 "                        g:netrw_winsize to specify the qty of rows or columns the
 "                        newly split window should have.
-"          dosplit==0: the window will be split iff the current file has been modified
+"          dosplit==0: the window will be split iff the current file has been modified and hidden not set
 "          dosplit==1: the window will be split before running the local browser
 "          style == 0: Explore     style == 1: Explore!
 "                == 2: Hexplore    style == 3: Hexplore!
@@ -751,8 +751,10 @@ fun! netrw#Explore(indx,dosplit,style,...)
   sil! let keepregplus = @+
   sil! let keepregslash= @/
 
-  " if dosplit or file has been modified
-  if a:dosplit || &modified || a:style == 6
+  " if   dosplit
+  " -or- file has been modified AND file not hidden when abandoned
+  " -or- Texplore used
+  if a:dosplit || (&modified && &hidden == 0 && &bufhidden != "hide") || a:style == 6
 "   call Decho("(Explore) case dosplit=".a:dosplit." modified=".&modified." a:style=".a:style.": dosplit or file has been modified")
    call s:SaveWinVars()
    let winsz= g:netrw_winsize
@@ -3040,15 +3042,15 @@ fun! s:NetrwMaps(islocal)
    exe 'nnoremap <buffer> <silent> <del>	:call <SID>NetrwLocalRm("'.mapsafecurdir.'")<cr>'
    exe 'nnoremap <buffer> <silent> D		:call <SID>NetrwLocalRm("'.mapsafecurdir.'")<cr>'
    exe 'nnoremap <buffer> <silent> R		:call <SID>NetrwLocalRename("'.mapsafecurdir.'")<cr>'
-   exe 'nnoremap <buffer> <silent> <Leader>m	:call <SID>NetrwMakeDir("")<cr>'
+   exe 'nnoremap <buffer> <silent> d		:call <SID>NetrwMakeDir("")<cr>'
    exe 'vnoremap <buffer> <silent> <del>	:call <SID>NetrwLocalRm("'.mapsafecurdir.'")<cr>'
    exe 'vnoremap <buffer> <silent> D		:call <SID>NetrwLocalRm("'.mapsafecurdir.'")<cr>'
    exe 'vnoremap <buffer> <silent> R		:call <SID>NetrwLocalRename("'.mapsafecurdir.'")<cr>'
    exe 'inoremap <buffer> <silent> <del>	<c-o>:call <SID>NetrwLocalRm("'.mapsafecurdir.'")<cr>'
    exe 'inoremap <buffer> <silent> D		<c-o>:call <SID>NetrwLocalRm("'.mapsafecurdir.'")<cr>'
    exe 'inoremap <buffer> <silent> R		<c-o>:call <SID>NetrwLocalRename("'.mapsafecurdir.'")<cr>'
-   exe 'inoremap <buffer> <silent> <Leader>m	<c-o>:call <SID>NetrwMakeDir("")<cr>'
-   nnoremap <buffer> <F1>		:he netrw-quickhelp<cr>
+   exe 'inoremap <buffer> <silent> d		<c-o>:call <SID>NetrwMakeDir("")<cr>'
+   nnoremap <buffer> <F1>			:he netrw-quickhelp<cr>
 
   else " remote
 "   call Decho("(NetrwMaps) make remote maps")
@@ -4382,9 +4384,10 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
 
     " the point where netrw actually edits the (local) file
     " if its local only: LocalBrowseCheck() doesn't edit a file, but NetrwBrowse() will
+    " no keepalt to support  :e #  to return to a directory listing
     if a:islocal
 "     call Decho("(NetrwBrowseChgDir:edit-a-file) edit local file: exe e! ".fnameescape(dirname))
-     exe "keepj keepalt e! ".fnameescape(dirname)
+     exe "keepj e! ".fnameescape(dirname)
      call s:NetrwCursor()
     else
 "     call Decho("(NetrwBrowseChgDir:edit-a-file) remote file: NetrwBrowse will edit it")
@@ -5223,7 +5226,11 @@ fun! s:NetrwMakeDir(usrhost)
    " requested new local directory is neither a pre-existing file or
    " directory, so make it!
    if exists("*mkdir")
-    call mkdir(fullnewdir,"p")
+    if has("unix")
+     call mkdir(fullnewdir,"p",xor(0777, system("umask")))
+    else
+     call mkdir(fullnewdir,"p")
+    endif
    else
     let netrw_origdir= s:NetrwGetcwd(1)
     exe 'keepj lcd '.fnameescape(b:netrw_curdir)

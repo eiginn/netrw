@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3.  Last change: 2013 Jun 05
+*pi_netrw.txt*  For Vim version 7.4a.  Last change: 2013 Jul 19
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -3005,6 +3005,10 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v150:	Jul 12, 2013	* removed a "keepalt" to allow ":e #" to
+				  return to the netrw directory listing
+		Jul 13, 2013	* (Jonas Diemer) suggested changing
+				  a <cWORD> to <cfile>.
 	v149:	Apr 18, 2013	* in wide listing format, now have maps for
 				  w and b to move to next/previous file
 		Apr 26, 2013	* one may now copy files in the same
@@ -3017,6 +3021,8 @@ which is loaded automatically at startup (assuming :set nocp).
 		May 01, 2013	* :Explore ftp://... wasn't working.  Fixed.
 		May 02, 2013	* introduced |g:netrw_bannerbackslash| as
 				  requested by Paul Domaskis.
+		Jul 03, 2013	* Explore now avoids splitting when a buffer
+				  will be hidden.
 	v148:	Apr 16, 2013	* changed Netrw's Style menu to allow direct
 				  choice of listing style, hiding style, and
 				  sorting style
