@@ -1,9 +1,9 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
-" Date:		Apr 30, 2013
+" Date:		Sep 12, 2013
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
-" Copyright:    Copyright (C) 1999-2012 Charles E. Campbell {{{1
+" Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -20,8 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-"DechoTabOn
-let g:loaded_netrwPlugin = "v150e"
+let g:loaded_netrwPlugin = "v150h"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** you need vim version 7.2 for this version of netrw"
@@ -36,7 +35,6 @@ if v:version < 703 || (v:version == 703 && !has("patch465"))
 endif
 let s:keepcpo = &cpo
 set cpo&vim
-"DechoTabOn
 
 " ---------------------------------------------------------------------
 " Public Interface: {{{1
@@ -44,7 +42,6 @@ set cpo&vim
 " Local Browsing: {{{2
 augroup FileExplorer
  au!
- " SEE Benzinger problem...
  au BufEnter *	sil! call s:LocalBrowse(expand("<amatch>"))
  au VimEnter *	sil! call s:VimEnter(expand("<amatch>"))
  if has("win32") || has("win95") || has("win64") || has("win16")
@@ -98,39 +95,44 @@ endif
 " LocalBrowse: {{{2
 fun! s:LocalBrowse(dirname)
   " unfortunate interaction -- debugging calls can't be used here;
-  " the BufEnter event causes triggering when attempts to write to
+  " the BufEnter event is triggered when attempts to write to
   " the DBG buffer are made.
   if !exists("s:vimentered")
+   " if s:vimentered doesn't exist, then the VimEnter event hasn't fired.  It will,
+   " so it'll be calling this routine again, but with s:vimentered defined.
+"   unsilent echomsg "s:LocalBrowse(dirname<".a:dirname.">){   (s:vimentered doesn't exist)"
+"   unsilent echomsg "|return s:LocalBrowse"
    return
   endif
-"  call Decho("s:LocalBrowse(dirname<".a:dirname.">){")
-"  echomsg "dirname<".a:dirname.">"
+"  unsilent echomsg "s:LocalBrowse(dirname<".a:dirname.">){"
   if has("amiga")
    " The check against '' is made for the Amiga, where the empty
    " string is the current directory and not checking would break
    " things such as the help command.
-"   call Decho("(LocalBrowse) dirname<".a:dirname.">  (amiga)")
+"   unsilent echomsg "(LocalBrowse) dirname<".a:dirname.">  (amiga)"
    if a:dirname != '' && isdirectory(a:dirname)
     sil! call netrw#LocalBrowseCheck(a:dirname)
    endif
   elseif isdirectory(a:dirname)
-"   echomsg "dirname<".dirname."> isdir"
-"   call Decho("(LocalBrowse) dirname<".a:dirname.">  (not amiga)")
+"   unsilent echomsg "dirname<".dirname."> isdir"
+"   unsilent echomsg "(LocalBrowse) dirname<".a:dirname.">  (not amiga)"
    sil! call netrw#LocalBrowseCheck(a:dirname)
+"  else		" unsilent echomsg
+   " not a directory, ignore it
+"   unsilent echomsg "(LocalBrowse) dirname<".a:dirname."> not a directory, ignoring..."
   endif
-  " not a directory, ignore it
-"  call Decho("|return s:LocalBrowse }")
+"  unsilent echomsg "|return s:LocalBrowse }"
 endfun
 
 " ---------------------------------------------------------------------
 " s:VimEnter: {{{2
 fun! s:VimEnter(dirname)
-"  call Decho("VimEnter(dirname<".a:dirname.">){")
+"  unsilent echomsg "VimEnter(dirname<".a:dirname.">) expand(%)<".expand("%")."> {"
   let curwin       = winnr()
   let s:vimentered = 1
-  windo if a:dirname != expand("%")|call s:LocalBrowse(expand("%:p"))|endif
+  windo call s:LocalBrowse(expand("%:p"))
   exe curwin."wincmd w"
-"  call Decho("|return VimEnter }")
+"  unsilent echomsg "|return VimEnter }"
 endfun
 
 " ---------------------------------------------------------------------

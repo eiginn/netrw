@@ -1,10 +1,10 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Jul 19, 2013
-" Version:	150e	ASTRO-ONLY
+" Date:		Sep 12, 2013
+" Version:	150h	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
-" Copyright:    Copyright (C) 1999-2012 Charles E. Campbell {{{1
+" Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v150e"
+let g:loaded_netrw = "v150h"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -481,7 +481,7 @@ endif
 "             NetrwBrowse.
 "             vt: normally its "w:" or "s:" (a variable type)
 fun! s:NetrwOptionSave(vt)
-"  call Dfunc("s:NetrwOptionSave(vt<".a:vt.">) win#".winnr()." buf#".bufnr("%")."<".bufname(bufnr("%")).">"." winnr($)=".winnr("$"))
+"  call Dfunc("s:NetrwOptionSave(vt<".a:vt.">) win#".winnr()." buf#".bufnr("%")."<".bufname(bufnr("%")).">"." winnr($)=".winnr("$")." mod=".&mod." ma=".&ma)
 "  call Decho(a:vt."netrw_optionsave".(exists("{a:vt}netrw_optionsave")? ("=".{a:vt}netrw_optionsave) : " doesn't exist"))
 
   if !exists("{a:vt}netrw_optionsave")
@@ -3778,6 +3778,7 @@ endfun
 "           1=re-used buffer
 fun! s:NetrwGetBuffer(islocal,dirname)
 "  call Dfunc("s:NetrwGetBuffer(islocal=".a:islocal." dirname<".a:dirname.">) liststyle=".g:netrw_liststyle)
+"  call Decho("(NetrwGetBuffer) modiable=".&mod." modifiable=".&ma." readonly=".&ro)
   let dirname= a:dirname
 
   " re-use buffer if possible {{{3
@@ -4387,7 +4388,13 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
     " no keepalt to support  :e #  to return to a directory listing
     if a:islocal
 "     call Decho("(NetrwBrowseChgDir:edit-a-file) edit local file: exe e! ".fnameescape(dirname))
-     exe "keepj e! ".fnameescape(dirname)
+     " some like c-^ to return to the last edited file
+     " others like c-^ to return to the netrw buffer
+     if exists("g:netrw_altfile") && g:netrw_altfile
+      exe "keepj keepalt e! ".fnameescape(dirname)
+     else
+      exe "keepj e! ".fnameescape(dirname)
+     endif
      call s:NetrwCursor()
     else
 "     call Decho("(NetrwBrowseChgDir:edit-a-file) remote file: NetrwBrowse will edit it")
@@ -7878,7 +7885,7 @@ fun! s:NetrwRemoteListing()
    let w:netrw_method= b:netrw_method
   endif
 
-  if s:method == "ftp"
+  if s:method == "ftp" || s:method == "sftp"
    " use ftp to get remote file listing {{{3
 "   call Decho("use ftp to get remote file listing")
    let s:method  = "ftp"
@@ -8186,6 +8193,7 @@ endfun
 fun! s:NetrwRemoteFtpCmd(path,listcmd)
 "  call Dfunc("NetrwRemoteFtpCmd(path<".a:path."> listcmd<".a:listcmd.">) w:netrw_method=".(exists("w:netrw_method")? w:netrw_method : (exists("b:netrw_method")? b:netrw_method : "???")))
 "  call Decho("line($)=".line("$")." w:netrw_bannercnt=".w:netrw_bannercnt)
+  " sanity check: {{{3
   if !exists("w:netrw_method")
    if exists("b:netrw_method")
     let w:netrw_method= b:netrw_method
@@ -8196,18 +8204,18 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
    endif
   endif
 
-  " because WinXX ftp uses unix style input
+  " WinXX ftp uses unix style input, so set ff to unix	" {{{3
   let ffkeep= &ff
   setl ma ff=unix noro
 "  call Decho("setl ma ff=unix noro")
 
-  " clear off any older non-banner lines
+  " clear off any older non-banner lines	" {{{3
   " note that w:netrw_bannercnt indexes the line after the banner
 "  call Decho('exe sil! keepjumps '.w:netrw_bannercnt.",$d  (clear off old non-banner lines)")
   exe "sil! keepjumps ".w:netrw_bannercnt.",$d"
 
   ".........................................
-  if w:netrw_method == 2 || w:netrw_method == 5
+  if w:netrw_method == 2 || w:netrw_method == 5	" {{{3
    " ftp + <.netrc>:  Method #2
    if a:path != ""
     keepj put ='cd \"'.a:path.'\"'
@@ -8226,8 +8234,8 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
     exe s:netrw_silentxfer." keepj ".w:netrw_bannercnt.",$!".s:netrw_ftp_cmd." -i ".shellescape(g:netrw_machine,1)
    endif
 
-   ".........................................
-  elseif w:netrw_method == 3
+  ".........................................
+  elseif w:netrw_method == 3	" {{{3
    " ftp + machine,id,passwd,filename:  Method #3
     setl ff=unix
     if exists("g:netrw_port") && g:netrw_port != ""
@@ -8270,12 +8278,24 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
 "    call Decho("exe ".s:netrw_silentxfer.w:netrw_bannercnt.",$!".s:netrw_ftp_cmd." ".g:netrw_ftp_options)
     exe s:netrw_silentxfer.w:netrw_bannercnt.",$!".s:netrw_ftp_cmd." ".g:netrw_ftp_options
 
-   ".........................................
-  else
-   keepj call netrw#ErrorMsg(s:WARNING,"unable to comply with your request<" . choice . ">",23)
+  ".........................................
+  elseif w:netrw_method == 9	" {{{3
+   " sftp username@machine: Method #9
+   " s:netrw_sftp_cmd
+   setl ff=unix
+"   call Decho("COMBAK: still working on sftp remote listing")
+
+   " restore settings
+   let &ff= ffkeep
+"   call Dret("NetrwRemoteFtpCmd")
+   return
+
+  ".........................................
+  else	" {{{3
+   keepj call netrw#ErrorMsg(s:WARNING,"unable to comply with your request<" . bufname("%") . ">",23)
   endif
 
-  " cleanup for Windows
+  " cleanup for Windows " {{{3
   if has("win32") || has("win95") || has("win64") || has("win16")
    sil! keepj %s/\r$//e
    keepj call histdel("/",-1)
@@ -8292,7 +8312,7 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
    endif
   endif
 
-  " ftp's listing doesn't seem to include ./ or ../
+  " ftp's listing doesn't seem to include ./ or ../ " {{{3
   if !search('^\.\/$\|\s\.\/$','wn')
    exe 'keepj '.w:netrw_bannercnt
    keepj put ='./'
@@ -8302,7 +8322,7 @@ fun! s:NetrwRemoteFtpCmd(path,listcmd)
    keepj put ='../'
   endif
 
-  " restore settings
+  " restore settings " {{{3
   let &ff= ffkeep
 "  call Dret("NetrwRemoteFtpCmd")
 endfun
@@ -9526,12 +9546,12 @@ endfun
 fun! s:RemotePathAnalysis(dirname)
 "  call Dfunc("s:RemotePathAnalysis(a:dirname<".a:dirname.">)")
 
-  let dirpat  = '^\(\w\{-}\)://\(\w\+@\)\=\([^/:#]\+\)\%([:#]\(\d\+\)\)\=/\(.*\)$'
+  let dirpat  = '^\(\w\{-}\)://\(\(\w\+\)@\)\=\([^/:#]\+\)\%([:#]\(\d\+\)\)\=/\(.*\)$'
   let s:method  = substitute(a:dirname,dirpat,'\1','')
-  let s:user    = substitute(a:dirname,dirpat,'\2','')
-  let s:machine = substitute(a:dirname,dirpat,'\3','')
-  let s:port    = substitute(a:dirname,dirpat,'\4','')
-  let s:path    = substitute(a:dirname,dirpat,'\5','')
+  let s:user    = substitute(a:dirname,dirpat,'\3','')
+  let s:machine = substitute(a:dirname,dirpat,'\4','')
+  let s:port    = substitute(a:dirname,dirpat,'\5','')
+  let s:path    = substitute(a:dirname,dirpat,'\6','')
   let s:fname   = substitute(a:dirname,'^.*/\ze.','','')
 
 "  call Decho("set up s:method <".s:method .">")
@@ -9706,40 +9726,46 @@ fun! s:SetRexDir(islocal,dirname)
 endfun
 
 " ---------------------------------------------------------------------
-" s:Strlen: this function returns the length of a string, even if its {{{2
-"           using multiple-byte characters.
-"           Solution from Nicolai Weibull, vim docs (:help strlen()), Tony Mechelynck,
-"           and a bit from me.
-"           if g:netrw_xstrlen is zero (default), then the builtin strlen() function is used.
+" s:Strlen: this function returns the length of a string, even if its using multi-byte characters. {{{2
+"           Solution from Nicolai Weibull, vim docs (:help strlen()),
+"           Tony Mechelynck, and my own invention.
 fun! s:Strlen(x)
-"  call Dfunc("s:Strlen(x<".a:x.">")
-  if g:netrw_xstrlen == 1
+"  call Dfunc("s:Strlen(x<".a:x."> g:Align_xstrlen=".g:Align_xstrlen)
+
+  if v:version >= 703 && exists("*strdisplaywidth")
+   let ret= strdisplaywidth(a:x)
+ 
+  elseif type(g:Align_xstrlen) == 1
+   " allow user to specify a function to compute the string length  (ie. let g:Align_xstrlen="mystrlenfunc")
+   exe "let ret= ".g:Align_xstrlen."('".substitute(a:x,"'","''","g")."')"
+ 
+  elseif g:Align_xstrlen == 1
    " number of codepoints (Latin a + combining circumflex is two codepoints)
    " (comment from TM, solution from NW)
    let ret= strlen(substitute(a:x,'.','c','g'))
-
-  elseif g:netrw_xstrlen == 2
-   " number of spacing codepoints (Latin a + combining circumflex is one spacing 
+ 
+  elseif g:Align_xstrlen == 2
+   " number of spacing codepoints (Latin a + combining circumflex is one spacing
    " codepoint; a hard tab is one; wide and narrow CJK are one each; etc.)
    " (comment from TM, solution from TM)
-   let ret=strlen(substitute(a:x, '.\Z', 'x', 'g')) 
-
-  elseif g:netrw_xstrlen == 3
-   " virtual length (counting, for instance, tabs as anything between 1 and 
-   " 'tabstop', wide CJK as 2 rather than 1, Arabic alif as zero when immediately 
+   let ret=strlen(substitute(a:x, '.\Z', 'x', 'g'))
+ 
+  elseif g:Align_xstrlen == 3
+   " virtual length (counting, for instance, tabs as anything between 1 and
+   " 'tabstop', wide CJK as 2 rather than 1, Arabic alif as zero when immediately
    " preceded by lam, one otherwise, etc.)
    " (comment from TM, solution from me)
-   let modkeep= &mod
-   exe "keepj norm! o\<esc>"
+   let modkeep= &l:mod
+   exe "norm! o\<esc>"
    call setline(line("."),a:x)
    let ret= virtcol("$") - 1
-   keepj d
+   d
    keepj norm! k
-   let &mod= modkeep
-
+   let &l:mod= modkeep
+ 
   else
    " at least give a decent default
-   let ret= strlen(a:x)
+    let ret= strlen(a:x)
   endif
 "  call Dret("s:Strlen ".ret)
   return ret

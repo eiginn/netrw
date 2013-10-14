@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4a.  Last change: 2013 Jul 19
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2013 Sep 12
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -2114,7 +2114,15 @@ your browsing preferences.  (see also: |netrw-settings|)
    ---				-----------
    Var				Explanation
    ---				-----------
-< *g:netrw_alto*		change from above splitting to below splitting
+<  *g:netrw_altfile*		some like |CTRL-^| to return to the last
+				edited file.  Choose that by setting this
+				parameter to 1.
+				Others like |CTRL-^| to return to the
+				netrw browsing buffer.  Choose that by setting
+				this parameter to 0.
+				 default: =0
+
+  *g:netrw_alto*		change from above splitting to below splitting
 				by setting this variable (see |netrw-o|)
 				 default: =&sb           (see |'sb'|)
 
@@ -3009,6 +3017,15 @@ which is loaded automatically at startup (assuming :set nocp).
 				  return to the netrw directory listing
 		Jul 13, 2013	* (Jonas Diemer) suggested changing
 				  a <cWORD> to <cfile>.
+		Jul 21, 2013	* (Yuri Kanivetsky) reported that netrw's
+				  use of mkdir did not produce directories
+				  following umask.
+		Aug 27, 2013	* introduced |g:netrw_altfile| option
+		Sep 05, 2013	* s:Strlen() now uses |strdisplaywidth()|
+				  when available, by default
+		Sep 12, 2013	* (Selyano Baldo) reported that netrw wasn't
+				  opening some directories properly from the
+				  command line.
 	v149:	Apr 18, 2013	* in wide listing format, now have maps for
 				  w and b to move to next/previous file
 		Apr 26, 2013	* one may now copy files in the same
