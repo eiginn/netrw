@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2013 Dec 09
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Jan 02
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -3115,6 +3115,9 @@ which is loaded automatically at startup (assuming :set nocp).
 				  windows.  All but one setting of cursorline
 				  was done via setl; there was one that was
 				  overlooked.  Fixed.
+		Dec 24, 2013	* (esquifit) asked that netrw allow the
+				  /cygdrive prefix be a user-alterable
+				  parameter.
 	v149:	Apr 18, 2013	* in wide listing format, now have maps for
 				  w and b to move to next/previous file
 		Apr 26, 2013	* one may now copy files in the same

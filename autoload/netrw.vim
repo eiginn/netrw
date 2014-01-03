@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Dec 09, 2013
-" Version:	150l	ASTRO-ONLY
+" Date:		Jan 02, 2014
+" Version:	150o	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v150l"
+let g:loaded_netrw = "v150o"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -43,7 +43,7 @@ set cpo&vim
 "   0=note     = s:NOTE
 "   1=warning  = s:WARNING
 "   2=error    = s:ERROR
-"  May 01, 2013 : max errnum currently is 93
+"  Dec 30, 2013 : max errnum currently is 94
 fun! netrw#ErrorMsg(level,msg,errnum)
 "  call Dfunc("netrw#ErrorMsg(level=".a:level." msg<".a:msg."> errnum=".a:errnum.") g:netrw_use_errorwindow=".g:netrw_use_errorwindow)
 
@@ -255,6 +255,7 @@ endif
 call s:NetrwInit("g:netrw_cursor"      , 2)
 let s:netrw_usercul = &cursorline
 let s:netrw_usercuc = &cursorcolumn
+call s:NetrwInit("g:netrw_cygdrive","/cygdrive")
 " Default values - d-g ---------- {{{3
 call s:NetrwInit("s:didstarstar",0)
 call s:NetrwInit("g:netrw_dirhist_cnt"      , 0)
@@ -440,11 +441,18 @@ endif
 "  Netrw Initialization: {{{1
 " ======================
 if v:version >= 700 && has("balloon_eval") && !exists("s:initbeval") && !exists("g:netrw_nobeval") && has("syntax") && exists("g:syntax_on")
-" let s:initbexpr = &l:bexpr
- let &l:bexpr    = "netrw#NetrwBalloonHelp()"
- au BufWinEnter,WinEnter *	if &ft == "netrw"|set beval|endif
- au WinLeave		 *	if &ft == "netrw" && exists("s:initbeval")|let &beval= s:initbeval|endif
- au VimEnter		 * 	let s:initbeval= &beval
+" call Decho("installed beval events")
+ let &l:bexpr = "netrw#NetrwBalloonHelp()"
+ au FileType netrw	set beval
+ au WinLeave *		if &ft == "netrw" && exists("s:initbeval")|let &beval= s:initbeval|endif
+ au VimEnter * 		let s:initbeval= &beval
+"else " Decho
+" if v:version < 700           | call Decho("did not install beval events: v:version=".v:version." < 700")     | endif
+" if !has("balloon_eval")      | call Decho("did not install beval events: does not have balloon_eval")        | endif
+" if exists("s:initbeval")     | call Decho("did not install beval events: s:initbeval exists")                | endif
+" if exists("g:netrw_nobeval") | call Decho("did not install beval events: g:netrw_nobeval exists")            | endif
+" if !has("syntax")            | call Decho("did not install beval events: does not have syntax highlighting") | endif
+" if exists("g:syntax_on")     | call Decho("did not install beval events: g:syntax_on exists")                | endif
 endif
 au WinEnter *	if &ft == "netrw"|call s:NetrwInsureWinVars()|endif
 
@@ -454,29 +462,39 @@ au WinEnter *	if &ft == "netrw"|call s:NetrwInsureWinVars()|endif
 
 " ---------------------------------------------------------------------
 " netrw#NetrwBalloonHelp: {{{2
-if v:version >= 700 && has("balloon_eval") && &beval == 1 && has("syntax") && exists("g:syntax_on")
-  fun! netrw#NetrwBalloonHelp()
-    if !exists("w:netrw_bannercnt") || v:beval_lnum >= w:netrw_bannercnt || (exists("g:netrw_nobeval") && g:netrw_nobeval)
-     let mesg= ""
-    elseif     v:beval_text == "Netrw" || v:beval_text == "Directory" || v:beval_text == "Listing"
-     let mesg = "i: thin-long-wide-tree  gh: quick hide/unhide of dot-files   qf: quick file info  %:open new file"
-    elseif     getline(v:beval_lnum) =~ '^"\s*/'
-     let mesg = "<cr>: edit/enter   o: edit/enter in horiz window   t: edit/enter in new tab   v:edit/enter in vert window"
-    elseif     v:beval_text == "Sorted" || v:beval_text == "by"
-     let mesg = 's: sort by name, time, or file size   r: reverse sorting order   mt: mark target'
-    elseif v:beval_text == "Sort"   || v:beval_text == "sequence"
-     let mesg = "S: edit sorting sequence"
-    elseif v:beval_text == "Hiding" || v:beval_text == "Showing"
-     let mesg = "a: hiding-showing-all   ctrl-h: editing hiding list   mh: hide/show by suffix"
-    elseif v:beval_text == "Quick" || v:beval_text == "Help"
-     let mesg = "Help: press <F1>"
-    elseif v:beval_text == "Copy/Move" || v:beval_text == "Tgt"
-     let mesg = "mt: mark target   mc: copy marked file to target   mm: move marked file to target"
-    else
-     let mesg= ""
-    endif
-    return mesg
-  endfun
+if v:version >= 700 && has("balloon_eval") && has("syntax") && exists("g:syntax_on") && !exists("g:netrw_nobeval")
+" call Decho("loading netrw#BalloonHelp()")
+ fun! netrw#NetrwBalloonHelp()
+   if &ft != "netrw"
+    return ""
+   endif
+   if !exists("w:netrw_bannercnt") || v:beval_lnum >= w:netrw_bannercnt || (exists("g:netrw_nobeval") && g:netrw_nobeval)
+    let mesg= ""
+   elseif     v:beval_text == "Netrw" || v:beval_text == "Directory" || v:beval_text == "Listing"
+    let mesg = "i: thin-long-wide-tree  gh: quick hide/unhide of dot-files   qf: quick file info  %:open new file"
+   elseif     getline(v:beval_lnum) =~ '^"\s*/'
+    let mesg = "<cr>: edit/enter   o: edit/enter in horiz window   t: edit/enter in new tab   v:edit/enter in vert window"
+   elseif     v:beval_text == "Sorted" || v:beval_text == "by"
+    let mesg = 's: sort by name, time, or file size   r: reverse sorting order   mt: mark target'
+   elseif v:beval_text == "Sort"   || v:beval_text == "sequence"
+    let mesg = "S: edit sorting sequence"
+   elseif v:beval_text == "Hiding" || v:beval_text == "Showing"
+    let mesg = "a: hiding-showing-all   ctrl-h: editing hiding list   mh: hide/show by suffix"
+   elseif v:beval_text == "Quick" || v:beval_text == "Help"
+    let mesg = "Help: press <F1>"
+   elseif v:beval_text == "Copy/Move" || v:beval_text == "Tgt"
+    let mesg = "mt: mark target   mc: copy marked file to target   mm: move marked file to target"
+   else
+    let mesg= ""
+   endif
+   return mesg
+ endfun
+"else " Decho
+" if v:version < 700            |call Decho("did not load netrw#BalloonHelp(): vim version ".v:version." < 700 -")|endif
+" if !has("balloon_eval")       |call Decho("did not load netrw#BalloonHelp(): does not have balloon eval")       |endif
+" if !has("syntax")             |call Decho("did not load netrw#BalloonHelp(): syntax disabled")                  |endif
+" if !exists("g:syntax_on")     |call Decho("did not load netrw#BalloonHelp(): g:syntax_on=".g:syntax_on)         |endif
+" if  exists("g:netrw_nobeval") |call Decho("did not load netrw#BalloonHelp(): g:netrw_nobeval exists")           |endif
 endif
 
 " ------------------------------------------------------------------------
@@ -2015,7 +2033,7 @@ fun! netrw#NetWrite(...) range
    exe "sil keepj w! ".fnameescape(v:cmdarg)." ".fnameescape(tmpfile)
   elseif g:netrw_cygwin
    " write (selected portion of) file to temporary
-   let cygtmpfile= substitute(tmpfile,'/cygdrive/\(.\)','\1:','')
+   let cygtmpfile= substitute(tmpfile,g:netrw_cygdrive.'/\(.\)','\1:','')
 "   call Decho("(write selected portion) sil exe ".a:firstline."," . a:lastline . "w! ".fnameescape(v:cmdarg)." ".fnameescape(cygtmpfile))
    exe "sil keepj ".a:firstline."," . a:lastline . "w! ".fnameescape(v:cmdarg)." ".fnameescape(cygtmpfile)
   else
@@ -2436,7 +2454,7 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
 
    " rename the current buffer to the temp file (ie. tfile)
    if g:netrw_cygwin
-    let tfile= substitute(a:tfile,'/cygdrive/\(.\)','\1:','')
+    let tfile= substitute(a:tfile,g:netrw_cygdrive.'/\(.\)','\1:','')
    else
     let tfile= a:tfile
    endif
@@ -2482,6 +2500,12 @@ fun! s:NetrwGetFile(readcmd, tfile, method)
 "   call Dredir("renamed buffer back to remote filename<".rfile."> : expand(%)<".expand("%").">","ls!")
    let line1 = 1
    let line2 = line("$")
+
+  elseif !&ma
+   " attempting to read a file after the current line in the file, but the buffer is not modifiable
+   keepj call netrw#ErrorMsg(s:WARNING,"attempt to read<".a:tfile."> into a non-modifiable buffer!",94)
+"   call Dret("NetrwGetFile : attempt to read<".a:tfile."> into a non-modifiable buffer!") 
+   return
 
   elseif s:FileReadable(a:tfile)
    " read file after current line
@@ -9164,7 +9188,7 @@ fun! netrw#WinPath(path)
 "  call Dfunc("netrw#WinPath(path<".a:path.">)")
   if (!g:netrw_cygwin || &shell !~ '\%(\<bash\>\|\<zsh\>\)\%(\.exe\)\=$') && (has("win32") || has("win95") || has("win64") || has("win16"))
    " remove cygdrive prefix, if present
-   let path = substitute(a:path,'/cygdrive/\(.\)','\1:','')
+   let path = substitute(a:path,g:netrw_cygdrive.'/\(.\)','\1:','')
    " remove trailing slash (Win95)
    let path = substitute(path, '\(\\\|/\)$', '', 'g')
    " remove escaped spaces
@@ -9331,7 +9355,7 @@ fun! s:FileReadable(fname)
 "  call Dfunc("s:FileReadable(fname<".a:fname.">)")
 
   if g:netrw_cygwin
-   let ret= filereadable(substitute(a:fname,'/cygdrive/\(.\)','\1:/',''))
+   let ret= filereadable(substitute(a:fname,g:netrw_cygdrive.'/\(.\)','\1:/',''))
   else
    let ret= filereadable(a:fname)
   endif
@@ -9369,7 +9393,7 @@ fun! s:GetTempfile(fname)
 
    " o/s dependencies
    if g:netrw_cygwin != 0
-    let tmpfile = substitute(tmpfile,'^\(\a\):','/cygdrive/\1','e')
+    let tmpfile = substitute(tmpfile,'^\(\a\):',g:netrw_cygdrive.'/\1','e')
    elseif has("win32") || has("win95") || has("win64") || has("win16")
     if !exists("+shellslash") || !&ssl
      let tmpfile = substitute(tmpfile,'/','\','g')
