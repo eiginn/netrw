@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Mar 20
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Apr 11
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -2373,6 +2373,11 @@ your browsing preferences.  (see also: |netrw-settings|)
 				trading off accuracy (ie. up-to-date listing)
 				versus speed.
 
+  *g:netrw_ffkeep*		(default: doesn't exist)
+  				If this variable exists and is zero, then
+				netrw will not do a save and restore for
+				|'fileformat'|.
+
   *g:netrw_fname_escape*	=' ?&;%'
 				Used on filenames before remote reading/writing
 
@@ -2634,6 +2639,9 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 If g:netrw_winsize is less than zero, then
 				the absolute value of g:netrw_winsize lines
 				or columns will be used for the new window.
+				 If g:netrw_winsize is zero, then a normal
+				split will be made (ie. |'equalalways'| will
+				take effect, for example).
 				 default: 50  (for 50%)
 
   *g:netrw_xstrlen*		Controls how netrw computes string lengths,
@@ -3177,6 +3185,17 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v152:	Apr 08, 2014   	* uses the |'noswapfile'| option (requires
+				  vim 7.4 with patch 213)
+				* (Enno Nagel) turn |'rnu'| off in netrw
+				  buffers.
+				* (Quinn Strahl) suggested that netrw
+				  allow regular window splitting to occur,
+				  thereby allowing |'equalalways'| to take
+				  effect.
+				* (qingtian zhao) normally, netrw will
+				  save and restore the |'fileformat'|;
+				  however, sometimes that isn't wanted
 	v151:	Jan 22, 2014	* extended :Rexplore to return to buffer
 				  prior to Explore or editing a directory
 				* (Ken Takata) netrw gave error when
