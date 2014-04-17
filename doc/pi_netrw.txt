@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Apr 11
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Apr 16
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -1919,19 +1919,21 @@ MARKING FILES					*netrw-:MF*	*netrw-mf* {{{2
 Netrw has several ways of marking files:
 
 	* One may mark files with the cursor atop a filename and
-	then pressing "mf".
+	  then pressing "mf".
 
 	* With gvim, in addition one may mark files with
-	<s-leftmouse>.
+	  <s-leftmouse>. (see |netrw-mouse|)
 
 	* One may use the :MF command, which takes a list of
-	files (for local directories, the list may include
-	wildcards -- see |glob()|) >
+	  files (for local directories, the list may include
+	  wildcards -- see |glob()|) >
 
 		:MF *.c
 <
 	* Note that :MF uses |<f-args>| to break the line
-	at spaces.
+	  at spaces.
+
+	* Mark files based upon the quickfix list (|netrw-qF|)
 
 The following netrw maps make use of marked files:
 
@@ -1948,7 +1950,6 @@ The following netrw maps make use of marked files:
     |netrw-mT|	Generate tags using marked files
     |netrw-mx|	Apply shell command to marked files
     |netrw-mz|	Compress/Decompress marked files
-    |netrw-qF|	Mark files using quickfix list
     |netrw-O|	Obtain marked files
     |netrw-R|	Rename marked files
 
@@ -3126,6 +3127,15 @@ Associated setting variables:	|g:netrw_chgwin|
 	     all netrw's mouse mappings, not just the <leftmouse> one.
 	     (see |g:netrw_mousemaps|)
 
+								*netrw-p16*
+	P16. When editing remote files (ex. :e ftp://hostname/path/file),
+	     under Windows I get an |E303| message complaining that its unable
+	     to open a swap file.
+
+	     (romainl) It looks like you are starting Vim from a protected
+	     directory.  Start if from your $HOME or another writable
+	     directory.
+
 ==============================================================================
 11. Debugging Netrw Itself				*netrw-debug* {{{1
 
@@ -3196,6 +3206,14 @@ which is loaded automatically at startup (assuming :set nocp).
 				* (qingtian zhao) normally, netrw will
 				  save and restore the |'fileformat'|;
 				  however, sometimes that isn't wanted
+		Apr 14, 2014	* whenever netrw marks a buffer as ro,
+				  it will also mark it as nomod.
+		Apr 16, 2014	* sftp protocol now supported by
+				  netrw#Obtain(); this means that one
+				  may use "mc" to copy a remote file
+				  to a local file using sftp, and that
+				  the |netrw-O| command can obtain remote
+				  files via sftp.
 	v151:	Jan 22, 2014	* extended :Rexplore to return to buffer
 				  prior to Explore or editing a directory
 				* (Ken Takata) netrw gave error when

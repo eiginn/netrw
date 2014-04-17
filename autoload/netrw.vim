@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Apr 11, 2014
-" Version:	152b	ASTRO-ONLY
+" Date:		Apr 16, 2014
+" Version:	152d	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -29,7 +29,7 @@ if v:version < 704 || !has("patch213")
  let s:needpatch213= 1
  finish
 endif
-let g:loaded_netrw = "v152b"
+let g:loaded_netrw = "v152d"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -51,7 +51,7 @@ setl cpo&vim
 "   0=note     = s:NOTE
 "   1=warning  = s:WARNING
 "   2=error    = s:ERROR
-"  Mar 04, 2014 : max errnum currently is 96
+"  Apr 16, 2014 : max errnum currently is 97
 fun! netrw#ErrorMsg(level,msg,errnum)
 "  call Dfunc("netrw#ErrorMsg(level=".a:level." msg<".a:msg."> errnum=".a:errnum.") g:netrw_use_errorwindow=".g:netrw_use_errorwindow)
 
@@ -107,7 +107,7 @@ fun! netrw#ErrorMsg(level,msg,errnum)
     hi link netrwMesgError   Error
    endif
 "   call Decho("setl noma ro bh=wipe")
-   setl noma ro bh=wipe
+   setl ro nomod noma bh=wipe
 
   else
    " (optional) netrw will show messages using echomsg.  Even if the
@@ -1370,8 +1370,29 @@ fun! netrw#Obtain(islocal,fname,...)
       keepj call netrw#ErrorMsg(s:ERROR,getline(1),5)
      endif
     endif
+
+   elseif b:netrw_method == 9
+    " obtain file using sftp
+"    call Decho("obtain via sftp (method #9)")
+    if a:fname =~ '/'
+     let localfile= substitute(a:fname,'^.*/','','')
+    else
+     let localfile= a:fname
+    endif
+"    call Decho("exe ".s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape(g:netrw_machine.":".b:netrw_fname,1).shellescape(localfile)." ".shellescape(tgtdir))
+    exe s:netrw_silentxfer."!".g:netrw_sftp_cmd." ".shellescape(g:netrw_machine.":".b:netrw_fname,1).shellescape(localfile)." ".shellescape(tgtdir)
+
    elseif !exists("b:netrw_method") || b:netrw_method < 0
-"    call Dfunc("netrw#Obtain : unsupported method")
+    " probably a badly formed url; protocol not recognized
+"    call Dret("netrw#Obtain : unsupported method")
+    return
+
+   else
+    " protocol recognized but not supported for Obtain (yet?)
+    if !exists("g:netrw_quiet")
+     keepj call netrw#ErrorMsg(s:ERROR,"current protocol not supported for obtaining file",97)
+    endif
+"    call Dret("netrw#Obtain : current protocol not supported for obtaining file")
     return
    endif
 
@@ -2012,7 +2033,7 @@ fun! netrw#NetRead(mode,...)
     endif
     let b:netrw_lastfile = choice
 "    call Decho("setl ro")
-    setl ro
+    setl ro nomod
 
    ".........................................
    " NetRead: (dav) NetRead Method #6 {{{3
@@ -2091,7 +2112,7 @@ fun! netrw#NetRead(mode,...)
     let result		= s:NetrwGetFile(readcmd,tmpfile, b:netrw_method)
     let b:netrw_lastfile = choice
 "    call Decho("setl ro")
-    setl ro
+    setl ro nomod
 
    ".........................................
    " NetRead: (sftp) NetRead Method #9 {{{3
@@ -4248,7 +4269,7 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
 "     call Decho("#1: quickhelp=".g:netrw_quickhelp." ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)")
      let g:netrw_quickhelp= (g:netrw_quickhelp + 1)%len(s:QuickHelp)
 "     call Decho("#2: quickhelp=".g:netrw_quickhelp." ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)")
-     setl noro ma nowrap
+     setl ma noro nowrap
      keepj call setline(line('.'),'"   Quick Help: <F1>:help  '.s:QuickHelp[g:netrw_quickhelp])
      setl noma nomod nowrap
      keepj call netrw#RestorePosn(nbcd_curpos)
@@ -4550,12 +4571,12 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
    if filewritable(dirname)
 "    call Decho("restore: doing modification lockout settings: ma nomod noro")
 "    call Decho("restore: setl ma nomod noro")
-    setl ma nomod noro
+    setl ma noro nomod
 "    call Decho("restore: ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)")
    else
 "    call Decho("restore: doing modification lockout settings: ma nomod ro")
 "    call Decho("restore: setl ma nomod noro")
-    setl ma nomod ro
+    setl ma ro nomod
 "    call Decho("restore: ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)")
    endif
   endif
@@ -8044,7 +8065,7 @@ fun! s:NetrwTreeListing(dirname)
     1d
    endwhile
 
-   setl noma nomod ro
+   exe "setl ".g:netrw_bufsettings
 
 "   call Dret("NetrwTreeListing : bufname<".expand("%").">")
    return
@@ -8149,7 +8170,7 @@ fun! s:NetrwWideListing()
    exe "nmap <buffer> <silent> w	/^\\\\|\\s\\s\\zs\\S/\<cr>"
    exe "nmap <buffer> <silent> b	?^\\\\|\\s\\s\\zs\\S?\<cr>"
 "   call Decho("NetrwWideListing) setl noma nomod ro")
-   setl noma nomod ro
+   exe "setl ".g:netrw_bufsettings
 "   call Decho("(NetrwWideListing) ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)")
 "   call Dret("NetrwWideListing")
    return
@@ -8652,7 +8673,7 @@ fun! s:NetrwRemoteListing()
    let w:netrw_method= b:netrw_method
   endif
 
-  if s:method == "ftp" || s:method == "sftp"
+  if s:method == "ftp"
    " use ftp to get remote file listing {{{3
 "   call Decho("use ftp to get remote file listing")
    let s:method  = "ftp"
@@ -8721,7 +8742,7 @@ fun! s:NetrwRemoteListing()
     endif
    endif
 
-  else
+   else
    " use ssh to get remote file listing {{{3
 "   call Decho("use ssh to get remote file listing: s:path<".s:path.">")
    let listcmd= s:MakeSshCmd(g:netrw_list_cmd)
@@ -10206,7 +10227,7 @@ fun! s:NetrwLcd(newdir)
    else
     call s:NetrwOptionRestore("w:")
 "    call Decho("setl noma nomod nowrap")
-    setl noma nomod nowrap
+    exe "setl ".g:netrw_bufsettings
 "    call Decho(" ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)")
     let a:newdir= dirname
 "    call Dret("s:NetrwBrowse : reusing buffer#".(exists("bufnum")? bufnum : 'N/A')."<".dirname."> getcwd<".getcwd().">")
