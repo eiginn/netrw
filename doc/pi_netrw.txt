@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Apr 16
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Apr 21
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -348,9 +348,9 @@ settings are described below, in |netrw-browser-options|, and in
  *g:netrw_bufsettings*	the settings that netrw buffers have
  			(default) noma nomod nonu nowrap ro nobl
 
- *g:netrw_chgwin*	specifies a window number where file edits will take
-			place.  (also see |netrw-C|)
-			(default) not defined
+ *g:netrw_chgwin*	specifies a window number where subsequent file edits
+			will take place.  (also see |netrw-C|)
+			(default) -1
 
  *g:Netrw_funcref*	specifies a function (or functions) to be called when
 			netrw edits a file.  The file is first edited, and
@@ -2839,6 +2839,15 @@ One may select a netrw window for editing with the "C" mapping, or by setting
 g:netrw_chgwin to the selected window number.  Subsequent selection of a file
 to edit (|netrw-cr|) will use that window.
 
+	* C  by itself, will select the current window for editing via
+	  |netrw-cr|
+
+	* [count]C the count will be used as the window number to be used
+	  for editing via |netrw-cr|.
+Using >
+	let g:netrw_chgwin= -1
+will restore the default editing behavior (ie. use the current window).
+
 Related topics:			|netrw-cr| |g:netrw_browse_split|
 Associated setting variables:	|g:netrw_chgwin|
 
@@ -3214,6 +3223,11 @@ which is loaded automatically at startup (assuming :set nocp).
 				  to a local file using sftp, and that
 				  the |netrw-O| command can obtain remote
 				  files via sftp.
+				* added [count]C support (see |netrw-C|)
+		Apr 18, 2014	* when |g:netrw_chgwin| is one more than
+				  the last window, then vertically split
+				  the last window and use it as the
+				  chgwin window.
 	v151:	Jan 22, 2014	* extended :Rexplore to return to buffer
 				  prior to Explore or editing a directory
 				* (Ken Takata) netrw gave error when
