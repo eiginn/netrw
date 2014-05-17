@@ -177,6 +177,7 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_sort_direction    = '.g:netrw_sort_direction
   put = 'let g:netrw_sort_options      = '.g:netrw_sort_options
   put = 'let g:netrw_sort_sequence     = '.g:netrw_sort_sequence
+  put = 'let g:netrw_servername        = '.g:netrw_servername
   put = 'let g:netrw_special_syntax    = '.g:netrw_special_syntax
   put = 'let g:netrw_ssh_browse_reject = '.g:netrw_ssh_browse_reject
   put = 'let g:netrw_ssh_cmd           = '.g:netrw_ssh_cmd
