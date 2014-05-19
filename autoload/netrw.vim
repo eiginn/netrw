@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		May 16, 2014
-" Version:	153a	ASTRO-ONLY
+" Date:		May 17, 2014
+" Version:	153b	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -29,7 +29,7 @@ if v:version < 704 || !has("patch213")
  let s:needpatch213= 1
  finish
 endif
-let g:loaded_netrw = "v153a"
+let g:loaded_netrw = "v153b"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -3181,18 +3181,7 @@ fun! s:NetrwBookHistHandler(chg,curdir)
   if a:chg == 0
    " bookmark the current directory
 "   call Decho("(user: <b>) bookmark the current directory")
-   if !exists("g:netrw_bookmarklist")
-    let g:netrw_bookmarklist= []
-   endif
-   if index(g:netrw_bookmarklist,a:curdir) == -1
-    " curdir not currently in g:netrw_bookmarklist, so include it
-    if isdirectory(a:curdir) && a:curdir !~ '/$'
-     call add(g:netrw_bookmarklist,a:curdir.'/')
-    else
-     call add(g:netrw_bookmarklist,a:curdir)
-    endif
-    call sort(g:netrw_bookmarklist)
-   endif
+   call s:MakeBookmark(a:curdir)
    echo "bookmarked the current directory"
 
   elseif a:chg == 1
@@ -3323,13 +3312,7 @@ fun! s:NetrwBookHistHandler(chg,curdir)
   elseif a:chg == 6
    " delete the v:count'th bookmark
 "   call Decho("delete bookmark#".v:count."<".g:netrw_bookmarklist[v:count-1].">")
-   let savefile= s:NetrwHome()."/.netrwbook"
-   if filereadable(savefile)
-"    call Decho("merge bookmarks (active and file)")
-    keepj call s:NetrwBookHistSave() " done here to merge bookmarks first
-"    call Decho("bookmark delete savefile<".savefile.">")
-    keepj call delete(savefile)
-   endif
+   call s:MergeBookmarks()
 "   call Decho("remove g:netrw_bookmarklist[".(v:count-1)."]")
    keepj call remove(g:netrw_bookmarklist,v:count-1)
 "   call Decho("resulting g:netrw_bookmarklist=".string(g:netrw_bookmarklist))
@@ -4159,6 +4142,76 @@ fun! s:NetrwBannerCtrl(islocal)
   endif
   let @@= ykeep
 "  call Dret("s:NetrwBannerCtrl : g:netrw_banner=".g:netrw_banner)
+endfun
+
+" ---------------------------------------------------------------------
+" s:NetrwBookmark: supports :NetrwMB[!] [file]s                 {{{2
+"
+"  No bang: enters files/directories into Netrw's bookmark system
+"   No argument and in netrw buffer:
+"     if there are marked files: bookmark marked files
+"     otherwise                : bookmark file/directory under cursor
+"   No argument and not in netrw buffer: bookmarks current open file
+"   Has arguments: globs them individually and bookmarks them
+"
+"  With bang: deletes files/directories from Netrw's bookmark system
+fun! s:NetrwBookmark(del,...)
+"  call Dfunc("s:NetrwBookmark(del=".a:del.",...) a:0=".a:0)
+  if a:0 == 0
+   if &ft == "netrw"
+    let curbufnr = bufnr("%")
+
+    if exists("s:netrwmarkfilelist_{curbufnr}")
+     " for every filename in the marked list
+"     call Decho("bookmark every filename in marked list")
+     let svpos  = netrw#SavePosn()
+     let islocal= expand("%") !~ '^\a\+://'
+     for fname in s:netrwmarkfilelist_{curbufnr}
+      if a:del|call s:DeleteBookmark(fname)|else|call s:MakeBookmark(fname)|endif
+     endfor
+     let curdir  = exists("b:netrw_curdir")? b:netrw_curdir : getcwd()
+     call s:NetrwUnmarkList(curbufnr,curdir)
+     keepj call s:NetrwRefresh(islocal,s:NetrwBrowseChgDir(islocal,'./'))
+     keepj call netrw#RestorePosn(svpos)
+    else
+     let fname= s:NetrwGetWord()
+     if a:del|call s:DeleteBookmark(fname)|else|call s:MakeBookmark(fname)|endif
+    endif
+
+   else
+    " bookmark currently open file
+"    call Decho("bookmark currently open file")
+    let fname= expand("%")
+    if a:del|call s:DeleteBookmark(fname)|else|call s:MakeBookmark(fname)|endif
+   endif
+
+  else
+   " bookmark specified files
+   "  attempts to infer if working remote or local
+   "  by deciding if the current file begins with an url
+   "  Globbing cannot be done remotely.
+   let islocal= expand("%") !~ '^\a\+://'
+"   call Decho("bookmark specified file".((a:0>1)? "s" : ""))
+   let i = 1
+   while i <= a:0
+    if islocal
+     let mbfiles= glob(a:{i},0,1)
+    else
+     let mbfiles= [a:{i}]
+    endif
+"    call Decho("mbfiles".string(mbfiles))
+    for mbfile in mbfiles
+"     call Decho("mbfile<".mbfile.">")
+     if a:del|call s:DeleteBookmark(mbfile)|else|call s:MakeBookmark(mbfile)|endif
+    endfor
+    let i= i + 1
+   endwhile
+  endif
+
+  " update the menu
+  call s:NetrwBookmarkMenu()
+
+"  call Dret("s:NetrwBookmark")
 endfun
 
 " ---------------------------------------------------------------------
@@ -5903,6 +5956,7 @@ endfun
 fun! s:NetrwCommands(islocal)
 "  call Dfunc("s:NetrwCommands(islocal=".a:islocal.")")
 
+  com! -nargs=* -complete=file -bang NetrwMB	call s:NetrwBookmark(<bang>0,<f-args>)
   com! Rexplore if exists("w:netrw_rexlocal")|call s:NetrwRexplore(w:netrw_rexlocal,exists("w:netrw_rexdir")? w:netrw_rexdir : ".")|else|call netrw#ErrorMsg(s:WARNING,"not a former netrw window",79)|endif
   if a:islocal
    com! -buffer -nargs=+ -complete=file MF	call s:NetrwMarkFiles(1,<f-args>)
@@ -10081,6 +10135,33 @@ fun! s:ComposePath(base,subdir)
 endfun
 
 " ---------------------------------------------------------------------
+" s:DeleteBookmark: deletes a file/directory from Netrw's bookmark system {{{2
+"   Related Functions: s:MakeBookmark() s:NetrwBookHistHandler() s:NetrwBookmark()
+fun! s:DeleteBookmark(fname)
+"  call Dfunc("s:DeleteBookmark(fname<".a:fname.">)")
+  call s:MergeBookmarks()
+
+  if exists("g:netrw_bookmarklist")
+   let indx= index(g:netrw_bookmarklist,a:fname)
+   if indx == -1
+    let indx= 0
+    while indx < len(g:netrw_bookmarklist)
+     if g:netrw_bookmarklist[indx] =~ a:fname
+      call remove(g:netrw_bookmarklist,indx)
+      let indx= indx - 1
+     endif
+     let indx= indx + 1
+    endwhile
+   else
+    " remove exact match
+    call remove(g:netrw_bookmarklist,indx)
+   endif
+  endif
+
+"  call Dret("s:DeleteBookmark")
+endfun
+
+" ---------------------------------------------------------------------
 " s:FileReadable: o/s independent filereadable {{{2
 fun! s:FileReadable(fname)
 "  call Dfunc("s:FileReadable(fname<".a:fname.">)")
@@ -10184,6 +10265,45 @@ fun! s:MakeSshCmd(sshcmd)
   endif
 "  call Dret("s:MakeSshCmd <".sshcmd.">")
   return sshcmd
+endfun
+
+" ---------------------------------------------------------------------
+" s:MakeBookmark: enters a bookmark into Netrw's bookmark system   {{{2
+fun! s:MakeBookmark(fname)
+"  call Dfunc("s:MakeBookmark(fname<".a:fname.">)")
+
+  if !exists("g:netrw_bookmarklist")
+   let g:netrw_bookmarklist= []
+  endif
+
+  if index(g:netrw_bookmarklist,a:fname) == -1
+   " curdir not currently in g:netrw_bookmarklist, so include it
+   if isdirectory(a:fname) && a:fname !~ '/$'
+    call add(g:netrw_bookmarklist,a:fname.'/')
+   elseif a:fname !~ '/'
+    call add(g:netrw_bookmarklist,getcwd()."/".a:fname)
+   else
+    call add(g:netrw_bookmarklist,a:fname)
+   endif
+   call sort(g:netrw_bookmarklist)
+  endif
+
+"  call Dret("s:MakeBookmark")
+endfun
+
+" ---------------------------------------------------------------------
+" s:MergeBookmarks: merge current bookmarks with saved bookmarks {{{2
+fun! s:MergeBookmarks()
+"  call Dfunc("s:MergeBookmarks()")
+  " get bookmarks from .netrwbook file
+  let savefile= s:NetrwHome()."/.netrwbook"
+  if filereadable(savefile)
+"   call Decho("merge bookmarks (active and file)")
+   keepj call s:NetrwBookHistSave()
+"   call Decho("bookmark delete savefile<".savefile.">")
+   keepj call delete(savefile)
+  endif
+"  call Dret("s:MergeBookmarks")
 endfun
 
 " ---------------------------------------------------------------------

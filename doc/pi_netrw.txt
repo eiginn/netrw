@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 May 16
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 May 17
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -1126,7 +1126,7 @@ QUICK REFERENCE: COMMANDS	*netrw-explore-cmds* *netrw-browse-cmds* {{{2
      :Texplore[!] [dir] Tab & Explore..........................|netrw-explore|
      :Vexplore[!] [dir] Vertical Split & Explore...............|netrw-explore|
 
-BOOKMARKING A DIRECTORY	*netrw-mb* *netrw-bookmark* *netrw-bookmarks* {{{2
+BOOKMARKING A DIRECTORY *netrw-mb* *netrw-bookmark* *netrw-bookmarks* {{{2
 
 One may easily "bookmark" a directory by using >
 
@@ -1134,6 +1134,24 @@ One may easily "bookmark" a directory by using >
 <
 Bookmarks are retained in between sessions in a $HOME/.netrwbook file, and are
 kept in sorted order.
+
+*netrw-:NetrwMB*
+Addtionally, one may use :NetrwMB to bookmark files or directories. >
+
+	:NetrwMB[!] [files/directories]
+
+< No bang: enters files/directories into Netrw's bookmark system
+
+   No argument and in netrw buffer:
+     if there are marked files: bookmark marked files
+     otherwise                : bookmark file/directory under cursor
+   No argument and not in netrw buffer: bookmarks current open file
+   Has arguments: globs them individually and bookmarks them
+
+ With bang: deletes files/directories from Netrw's bookmark system
+
+The :NetrwMB command is available outside of netrw buffers (once netrw has been
+invoked in the session).
 
 Related Topics:
 	|netrw-gb| how to return (go) to a bookmark
@@ -1464,7 +1482,11 @@ DELETING BOOKMARKS					*netrw-mB* {{{2
 To delete a bookmark, use >
 
 	{cnt}mB
-<
+
+Alternatively, one may use :NetrwMB! (see |netrw-:NetrwMB|). >
+
+	:NetrwMB! [files/directories]
+	
 Related Topics:
 	|netrw-gb| how to return (go) to a bookmark
 	|netrw-mb| how to make a bookmark
@@ -3256,6 +3278,7 @@ which is loaded automatically at startup (assuming :set nocp).
 				  (ie. even when syntax highlighting is
 				  off, not available, etc)
 		May 16, 2014	* introduced the |netrw-ctrl-r| functionality
+		May 17, 2014	* introduced the |netrw-:NetrwMB| functionality
 	v152:	Apr 08, 2014   	* uses the |'noswapfile'| option (requires {{{2
 				  vim 7.4 with patch 213)
 				* (Enno Nagel) turn |'rnu'| off in netrw
