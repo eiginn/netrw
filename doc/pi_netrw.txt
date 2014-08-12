@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Jul 21
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Jul 30
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -18,9 +18,10 @@ Copyright: Copyright (C) 1999-2014 Charles E Campbell    *netrw-copyright*
 	software. Use at your own risk!
 
 
+		*netrw*
 		*dav*    *ftp*    *netrw-file*  *rcp*    *scp*
 		*davs*   *http*   *netrw.vim*   *rsync*  *sftp*
-		*fetch*  *netrw*  *network*
+		*fetch*  *network*
 
 ==============================================================================
 1. Contents						*netrw-contents* {{{1
@@ -3454,6 +3455,10 @@ which is loaded automatically at startup (assuming :set nocp).
 		Jul 09, 2014	* fixing bugs due to previous update
 		Jul 21, 2014	* (Bruno Sutic) provided an updated
 				  netrw_gitignore.vim
+		Jul 30, 2014	* (Yavuz Yetim) reported that editing two
+				  remote files of the same name caused the
+				  second instance to have a "temporary"
+				  name.  Fixed: now they use the same buffer.
 	v152:	Apr 08, 2014	* uses the |'noswapfile'| option (requires {{{2
 				  vim 7.4 with patch 213)
 				* (Enno Nagel) turn |'rnu'| off in netrw

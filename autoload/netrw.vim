@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Jul 21, 2014
-" Version:	153o	ASTRO-ONLY
+" Date:		Jul 30, 2014
+" Version:	153q	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -29,7 +29,7 @@ if v:version < 704 || !has("patch213")
  let s:needpatch213= 1
  finish
 endif
-let g:loaded_netrw = "v153o"
+let g:loaded_netrw = "v153q"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -3552,47 +3552,54 @@ fun! s:NetrwBrowse(islocal,dirname)
 "   call Decho("getcwd<".getcwd().">")
 
   elseif !a:islocal && dirname !~ '[\/]$' && dirname !~ '^"'
-   " s:NetrwBrowse: looks like a remote regular file, attempt transfer {{{3
-"   call Decho("attempt transfer as regular file<".dirname.">")
-
-   " remove any filetype indicator from end of dirname, except for the
-   " "this is a directory" indicator (/).
-   " There shouldn't be one of those here, anyway.
-   let path= substitute(dirname,'[*=@|]\r\=$','','e')
-"   call Decho("new path<".path.">")
-   call s:RemotePathAnalysis(dirname)
-
-   " s:NetrwBrowse: remote-read the requested file into current buffer {{{3
-   NetrwKeepj mark '
-   call s:NetrwEnew(dirname)
-   call s:NetrwSafeOptions()
-   setl ma noro
-"   call Decho("setl ma noro")
-   let b:netrw_curdir = dirname
-   let url            = s:method."://".((s:user == "")? "" : s:user."@").s:machine.(s:port ? ":".s:port : "")."/".s:path
-"   call Decho("exe sil! keepalt file ".fnameescape(url)." (bt=".&bt.")")
-   exe "sil! NetrwKeepj keepalt file ".fnameescape(url)
-   exe "sil! NetrwKeepj keepalt doau BufReadPre ".fnameescape(s:fname)
-   sil call netrw#NetRead(2,url)
-   " netrw.vim and tar.vim have already handled decompression of the tarball; avoiding gzip.vim error
-"   call Decho("url<".url.">")
-"   call Decho("s:path<".s:path.">")
-"   call Decho("s:fname<".s:fname.">")
-   if s:path =~ '.bz2'
-    exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.bz2$','',''))
-   elseif s:path =~ '.gz'
-    exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.gz$','',''))
-   elseif s:path =~ '.gz'
-    exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.txz$','',''))
+   " s:NetrwBrowse:  remote regular file handler {{{3
+"   call Decho("handle remote regular file: dirname<".dirname.">")
+   if bufname(dirname) != ""
+"    call Decho("edit buf#".bufname(dirname)." in win#".winnr())
+    exe "b ".bufname(dirname)
    else
-    exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(s:fname)
+    " attempt transfer of remote regular file
+"    call Decho("attempt transfer as regular file<".dirname.">")
+
+    " remove any filetype indicator from end of dirname, except for the
+    " "this is a directory" indicator (/).
+    " There shouldn't be one of those here, anyway.
+    let path= substitute(dirname,'[*=@|]\r\=$','','e')
+"    call Decho("new path<".path.">")
+    call s:RemotePathAnalysis(dirname)
+
+    " s:NetrwBrowse: remote-read the requested file into current buffer {{{3
+    NetrwKeepj mark '
+    call s:NetrwEnew(dirname)
+    call s:NetrwSafeOptions()
+    setl ma noro
+"    call Decho("setl ma noro")
+    let b:netrw_curdir = dirname
+    let url            = s:method."://".((s:user == "")? "" : s:user."@").s:machine.(s:port ? ":".s:port : "")."/".s:path
+"    call Decho("exe sil! keepalt file ".fnameescape(url)." (bt=".&bt.")")
+    exe "sil! NetrwKeepj keepalt file ".fnameescape(url)
+    exe "sil! NetrwKeepj keepalt doau BufReadPre ".fnameescape(s:fname)
+    sil call netrw#NetRead(2,url)
+    " netrw.vim and tar.vim have already handled decompression of the tarball; avoiding gzip.vim error
+"    call Decho("url<".url.">")
+"    call Decho("s:path<".s:path.">")
+"    call Decho("s:fname<".s:fname.">")
+    if s:path =~ '.bz2'
+     exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.bz2$','',''))
+    elseif s:path =~ '.gz'
+     exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.gz$','',''))
+    elseif s:path =~ '.gz'
+     exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(substitute(s:fname,'\.txz$','',''))
+    else
+     exe "sil NetrwKeepj keepalt doau BufReadPost ".fnameescape(s:fname)
+    endif
    endif
 
    " s:NetrwBrowse: save certain window-oriented variables into buffer-oriented variables {{{3
    call s:SetBufWinVars()
    call s:NetrwOptionRestore("w:")
 "   call Decho("setl ma nomod")
-   setl ma nomod
+   setl ma nomod noro
 "   call Decho(" ro=".&l:ro." ma=".&l:ma." mod=".&l:mod." wrap=".&l:wrap." (filename<".expand("%")."> win#".winnr()." ft<".&ft.">)")
 
 "   call Dret("s:NetrwBrowse : file<".s:fname.">")
@@ -8169,7 +8176,9 @@ fun! s:NetrwSplit(mode)
    exe (g:netrw_alto? "bel " : "abo ").winsz."wincmd s"
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
-   NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   " Selected keepj removal
+   "NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
    unlet s:didsplit
 
   elseif a:mode == 1
@@ -8179,7 +8188,9 @@ fun! s:NetrwSplit(mode)
    tabnew
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
-   NetrwKeepj call s:NetrwBrowse(0,newdir)
+   " Selected keepj removal
+   "NetrwKeepj call s:NetrwBrowse(0,newdir)
+   call s:NetrwBrowse(0,newdir)
    unlet s:didsplit
 
   elseif a:mode == 2
@@ -8190,7 +8201,9 @@ fun! s:NetrwSplit(mode)
    exe (g:netrw_altv? "rightb " : "lefta ").winsz."wincmd v"
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
-   NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   " Selected keepj removal
+   "NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
    unlet s:didsplit
 
   elseif a:mode == 3
@@ -8240,7 +8253,9 @@ fun! s:NetrwSplit(mode)
    exe (g:netrw_altv? "rightb " : "lefta ").winsz."wincmd v"
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
-   NetrwKeepj call netrw#LocalBrowseCheck(s:NetrwBrowseChgDir(1,s:NetrwGetWord()))
+   " Selected keepj removal
+   "NetrwKeepj call netrw#LocalBrowseCheck(s:NetrwBrowseChgDir(1,s:NetrwGetWord()))
+   call netrw#LocalBrowseCheck(s:NetrwBrowseChgDir(1,s:NetrwGetWord()))
    unlet s:didsplit
 
   else
@@ -9541,7 +9556,9 @@ fun! netrw#LocalBrowseCheck(dirname)
 
    if &ft != "netrw" || (exists("b:netrw_curdir") && b:netrw_curdir != a:dirname) || g:netrw_fastbrowse <= 1
 "    call Decho("case 1 : ft=".&ft)
-    sil! NetrwKeepj keepalt call s:NetrwBrowse(1,a:dirname)
+    " Selected keepj removal
+"    sil! NetrwKeepj keepalt call s:NetrwBrowse(1,a:dirname)
+    sil! call s:NetrwBrowse(1,a:dirname)
     keepalt call netrw#RestorePosn(svposn)
 
    elseif &ft == "netrw" && line("$") == 1
