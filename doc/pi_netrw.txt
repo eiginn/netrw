@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Jul 30
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Aug 08
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -683,7 +683,7 @@ your <.vimrc> customization file: >
 	if version >= 600
 	  filetype plugin indent on
 	endif
-<       
+<
 By also including the following lines in your .vimrc, one may have netrw
 immediately activate when using [g]vim without any filenames, showing the
 current directory: >
@@ -1518,7 +1518,7 @@ bookmark list.
 Alternatively, one may use :NetrwMB! (see |netrw-:NetrwMB|). >
 
 	:NetrwMB! [files/directories]
-	
+
 Related Topics:
 	|netrw-gb| how to return (go) to a bookmark
 	|netrw-mb| how to make a bookmark
@@ -3022,7 +3022,7 @@ window.
 	* [count]C the count will be used as the window number to be used
 	  for editing via |netrw-cr|.
 
-	* :NetrwC will set |g:netrw_chgwin| to the current window 
+	* :NetrwC will set |g:netrw_chgwin| to the current window
 
 	* :NetrwC win#  will set |g:netrw_chgwin| to the specified window
 	  number
@@ -3415,7 +3415,7 @@ which is loaded automatically at startup (assuming :set nocp).
 				  off, not available, etc)
 		May 16, 2014	* introduced the |netrw-ctrl-r| functionality
 		May 17, 2014	* introduced the |netrw-:NetrwMB| functionality
-				* mb and mB (|netrw-mb|, |netrw-mB|) will 
+				* mb and mB (|netrw-mb|, |netrw-mB|) will
 				  add/remove marked files from bookmark list
 		May 20, 2014	* (Enno Nagel) reported that :Lex <dirname>
 				  wasn't working.  Fixed.

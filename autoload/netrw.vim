@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Jul 30, 2014
-" Version:	153q	ASTRO-ONLY
+" Date:		Aug 08, 2014
+" Version:	153r	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -29,7 +29,7 @@ if v:version < 704 || !has("patch213")
  let s:needpatch213= 1
  finish
 endif
-let g:loaded_netrw = "v153q"
+let g:loaded_netrw = "v153r"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -4456,6 +4456,7 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
 
    " save position for benefit of Rexplore
    let s:rexposn_{bufnr("%")}= netrw#SavePosn()
+   norm! m`
 
 "   call Decho("edit-a-file: setting s:rexposn_".bufnr("%")." to SavePosn")
 "   call Decho("edit-a-file: win#".winnr()." buf#".bufnr("%")."<".bufname("%")."> ft=".&ft)
@@ -8177,8 +8178,9 @@ fun! s:NetrwSplit(mode)
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
    " Selected keepj removal
-   "NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
-   call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   norm! m`
+   NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   "call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
    unlet s:didsplit
 
   elseif a:mode == 1
@@ -8189,8 +8191,9 @@ fun! s:NetrwSplit(mode)
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
    " Selected keepj removal
-   "NetrwKeepj call s:NetrwBrowse(0,newdir)
-   call s:NetrwBrowse(0,newdir)
+   norm! m`
+   NetrwKeepj call s:NetrwBrowse(0,newdir)
+   "call s:NetrwBrowse(0,newdir)
    unlet s:didsplit
 
   elseif a:mode == 2
@@ -8202,8 +8205,9 @@ fun! s:NetrwSplit(mode)
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
    " Selected keepj removal
-   "NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
-   call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   norm! m`
+   NetrwKeepj call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
+   "call s:NetrwBrowse(0,s:NetrwBrowseChgDir(0,s:NetrwGetWord()))
    unlet s:didsplit
 
   elseif a:mode == 3
@@ -8254,8 +8258,9 @@ fun! s:NetrwSplit(mode)
    let s:didsplit= 1
    NetrwKeepj call s:RestoreWinVars()
    " Selected keepj removal
-   "NetrwKeepj call netrw#LocalBrowseCheck(s:NetrwBrowseChgDir(1,s:NetrwGetWord()))
-   call netrw#LocalBrowseCheck(s:NetrwBrowseChgDir(1,s:NetrwGetWord()))
+   norm! m`
+   NetrwKeepj call netrw#LocalBrowseCheck(s:NetrwBrowseChgDir(1,s:NetrwGetWord()))
+   "call netrw#LocalBrowseCheck(s:NetrwBrowseChgDir(1,s:NetrwGetWord()))
    unlet s:didsplit
 
   else
@@ -9557,8 +9562,9 @@ fun! netrw#LocalBrowseCheck(dirname)
    if &ft != "netrw" || (exists("b:netrw_curdir") && b:netrw_curdir != a:dirname) || g:netrw_fastbrowse <= 1
 "    call Decho("case 1 : ft=".&ft)
     " Selected keepj removal
-"    sil! NetrwKeepj keepalt call s:NetrwBrowse(1,a:dirname)
-    sil! call s:NetrwBrowse(1,a:dirname)
+    norm! m`
+    sil! NetrwKeepj keepalt call s:NetrwBrowse(1,a:dirname)
+    "sil! call s:NetrwBrowse(1,a:dirname)
     keepalt call netrw#RestorePosn(svposn)
 
    elseif &ft == "netrw" && line("$") == 1
