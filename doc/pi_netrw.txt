@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Aug 08
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2014 Sep 11
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -409,6 +409,14 @@ settings are described below, in |netrw-browser-options|, and in
 			=1 preview window shown in a vertically split window.
 			   Also affects the "previous window" (see |netrw-P|)
 			   in the same way.
+			The |g:netrw_alto| variable may be used to provide
+			additional splitting control:
+				g:netrw_preview g:netrw_alto result
+				         0             0     |:aboveleft|
+				         0             1     |:belowright| 
+				         1             0     |:topleft||
+				         1             1     |:botright|
+			To control sizing, see |g:netrw_winsize|
 
  *g:netrw_scpport*	= "-P" : option to use to set port for scp
  *g:netrw_sshport*	= "-p" : option to use to set port for ssh
@@ -3352,10 +3360,16 @@ Associated setting variables:	|g:netrw_chgwin|
 ==============================================================================
 11. Debugging Netrw Itself				*netrw-debug* {{{1
 
-The <netrw.vim> script is typically available as something like:
+First, check that the problem you've encountered hasn't already been resolved
+by obtaining a copy of the latest (often developmental) netrw at:
+
+	http://www.drchip.org/astronaut/vim/index.html#NETRW
+
+The <netrw.vim> script is typically installed on systems as something like:
 >
 	/usr/local/share/vim/vim7x/plugin/netrwPlugin.vim
 	/usr/local/share/vim/vim7x/autoload/netrw.vim
+		(see output of :echo &rtp)
 <
 which is loaded automatically at startup (assuming :set nocp).
 
