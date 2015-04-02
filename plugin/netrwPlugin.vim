@@ -1,6 +1,6 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
-" Date:		Jun 10, 2014
+" Date:		Nov 07, 2014
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2013 Charles E. Campbell {{{1
@@ -20,19 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v153s"
-if v:version < 702
- echohl WarningMsg
- echo "***warning*** you need vim version 7.2 for this version of netrw"
- echohl None
- finish
-endif
-if v:version < 703 || (v:version == 703 && !has("patch465"))
- echohl WarningMsg
- echo "***warning*** this version of netrw needs vim 7.3.465 or later"
- echohl Normal
- finish
-endif
+let g:loaded_netrwPlugin = "v154a"
 let s:keepcpo = &cpo
 set cpo&vim
 "DechoRemOn
@@ -54,15 +42,15 @@ augroup END
 " Network Browsing Reading Writing: {{{2
 augroup Network
  au!
- au BufReadCmd   file://*									call netrw#FileUrlRead(expand("<amatch>"))
- au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "sil doau BufReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(2,expand("<amatch>"))|exe "sil doau BufReadPost ".fnameescape(expand("<amatch>"))
- au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "sil doau FileReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(1,expand("<amatch>"))|exe "sil doau FileReadPost ".fnameescape(expand("<amatch>"))
- au BufWriteCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*		exe "sil doau BufWritePre ".fnameescape(expand("<amatch>"))|exe 'Nwrite '.fnameescape(expand("<amatch>"))|exe "sil doau BufWritePost ".fnameescape(expand("<amatch>"))
- au FileWriteCmd ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*		exe "sil doau FileWritePre ".fnameescape(expand("<amatch>"))|exe "'[,']".'Nwrite '.fnameescape(expand("<amatch>"))|exe "sil doau FileWritePost ".fnameescape(expand("<amatch>"))
- try
-  au SourceCmd   ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource '.fnameescape(expand("<amatch>"))
- catch /^Vim\%((\a\+)\)\=:E216/
-  au SourcePre   ftp://*,rcp://*,scp://*,http://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource '.fnameescape(expand("<amatch>"))
+ au BufReadCmd   file://*											call netrw#FileUrlRead(expand("<amatch>"))
+ au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,file://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "sil doau BufReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(2,expand("<amatch>"))|exe "sil doau BufReadPost ".fnameescape(expand("<amatch>"))
+ au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,file://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe "sil doau FileReadPre ".fnameescape(expand("<amatch>"))|call netrw#Nread(1,expand("<amatch>"))|exe "sil doau FileReadPost ".fnameescape(expand("<amatch>"))
+ au BufWriteCmd  ftp://*,rcp://*,scp://*,http://*,file://*,dav://*,davs://*,rsync://*,sftp://*			exe "sil doau BufWritePre ".fnameescape(expand("<amatch>"))|exe 'Nwrite '.fnameescape(expand("<amatch>"))|exe "sil doau BufWritePost ".fnameescape(expand("<amatch>"))
+ au FileWriteCmd ftp://*,rcp://*,scp://*,http://*,file://*,dav://*,davs://*,rsync://*,sftp://*			exe "sil doau FileWritePre ".fnameescape(expand("<amatch>"))|exe "'[,']".'Nwrite '.fnameescape(expand("<amatch>"))|exe "sil doau FileWritePost ".fnameescape(expand("<amatch>"))
+ try                                                       
+  au SourceCmd   ftp://*,rcp://*,scp://*,http://*,file://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource '.fnameescape(expand("<amatch>"))
+ catch /^Vim\%((\a\+)\)\=:E216/                            
+  au SourcePre   ftp://*,rcp://*,scp://*,http://*,file://*,https://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource '.fnameescape(expand("<amatch>"))
  endtry
 augroup END
 
@@ -93,13 +81,13 @@ if !exists("g:netrw_nogx")
   if !hasmapto('<Plug>NetrwBrowseX')
    nmap <unique> gx <Plug>NetrwBrowseX
   endif
-  nno <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand((exists("g:netrw_gx")? g:netrw_gx : '<cfile>')),netrw#CheckIfRemote())<cr>
+  nno <silent> <Plug>NetrwBrowseX :call netrw#BrowseX(expand((exists("g:netrw_gx")? g:netrw_gx : '<cfile>')),netrw#CheckIfRemote())<cr>
  endif
  if maparg('gx','v') == ""
   if !hasmapto('<Plug>NetrwBrowseXVis')
    vmap <unique> gx <Plug>NetrwBrowseXVis
   endif
-  vno <silent> <Plug>NetrwBrowseXVis :<c-u>call netrw#NetrwBrowseXVis()<cr>
+  vno <silent> <Plug>NetrwBrowseXVis :<c-u>call netrw#BrowseXVis()<cr>
  endif
 endif
 
