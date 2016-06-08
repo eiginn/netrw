@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Apr 20, 2016
-" Version:	157a	ASTRO-ONLY
+" Date:		May 26, 2016
+" Version:	157f	ASTRO-ONLY
 " Maintainer:	Charles E Campbell <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 2016 Charles E. Campbell {{{1
@@ -22,15 +22,24 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-" netrw requires vim having patch 213; netrw will benefit from vim's having patch#656, too
-if v:version < 704 || !has("patch213")
- if !exists("s:needpatch213")
-  unsilent echomsg "***sorry*** this version of netrw requires vim v7.4 with patch 213"
- endif
- let s:needpatch213= 1
- finish
+
+" Check that vim has patches that netrw requires.
+" Patches needed: 1728, 1558, 1557, and 213.
+" (netrw will benefit from vim's having patch#656, too)
+let s:needspatches=[1728,1558,1557,213]
+if exists("s:needspatches")
+ for ptch in s:needspatches
+  if v:version < 704 || (v:version == 704 && !has("patch".ptch))
+   if !exists("s:needpatch{ptch}")
+    unsilent echomsg "***sorry*** this version of netrw requires vim v7.4 with patch#".ptch
+   endif
+   let s:needpatch{ptch}= 1
+   finish
+  endif
+ endfor
 endif
-let g:loaded_netrw = "v157a"
+
+let g:loaded_netrw = "v157f"
 if !exists("s:NOTE")
  let s:NOTE    = 0
  let s:WARNING = 1
@@ -416,7 +425,8 @@ if !exists("g:netrw_localmovecmd")
   let g:netrw_localmovecmd= ""
  endif
 endif
-if v:version < 704 || !has("patch1109")
+if v:version < 704 || (v:version == 704 && !has("patch1107"))
+ " 1109 provides for delete(tmpdir,"d") which is what will be used
  if exists("g:netrw_local_rmdir")
   let g:netrw_localrmdir= g:netrw_local_rmdir
   call netrw#ErrorMsg(s:NOTE,"g:netrw_local_rmdir is deprecated in favor of g:netrw_localrmdir",86)
@@ -5469,11 +5479,14 @@ fun! s:NetrwHidden(islocal)
 "  call Decho("saving posn to svpos<".string(svpos).">",'~'.expand("<slnum>"))
 
   if g:netrw_list_hide =~ '\(^\|,\)\\(^\\|\\s\\s\\)\\zs\\.\\S\\+'
-   " remove pattern from hiding list
+   " remove .file pattern from hiding list
+"   call Decho("remove .file pattern from hiding list",'~'.expand("<slnum>"))
    let g:netrw_list_hide= substitute(g:netrw_list_hide,'\(^\|,\)\\(^\\|\\s\\s\\)\\zs\\.\\S\\+','','')
   elseif s:Strlen(g:netrw_list_hide) >= 1
+"   call Decho("add .file pattern from hiding list",'~'.expand("<slnum>"))
    let g:netrw_list_hide= g:netrw_list_hide . ',\(^\|\s\s\)\zs\.\S\+'
   else
+"   call Decho("set .file pattern as hiding list",'~'.expand("<slnum>"))
    let g:netrw_list_hide= '\(^\|\s\s\)\zs\.\S\+'
   endif
 
@@ -5489,7 +5502,7 @@ endfun
 "  s:NetrwHome: this function determines a "home" for saving bookmarks and history {{{2
 fun! s:NetrwHome()
   if exists("g:netrw_home")
-   let home= g:netrw_home
+   let home= expand(g:netrw_home)
   else
    " go to vim plugin home
    for home in split(&rtp,',') + ['']
@@ -5524,6 +5537,9 @@ endfun
 " s:NetrwLeftmouse: handles the <leftmouse> when in a netrw browsing window {{{2
 fun! s:NetrwLeftmouse(islocal)
   if exists("s:netrwdrag")
+   return
+  endif
+  if &ft != "netrw"
    return
   endif
 "  call Dfunc("s:NetrwLeftmouse(islocal=".a:islocal.")")
@@ -5573,6 +5589,9 @@ endfun
 " ---------------------------------------------------------------------
 " s:NetrwCLeftmouse: used to select a file/directory for a target {{{2
 fun! s:NetrwCLeftmouse(islocal)
+  if &ft != "netrw"
+   return
+  endif
 "  call Dfunc("s:NetrwCLeftmouse(islocal=".a:islocal.")")
   call s:NetrwMarkFileTgt(a:islocal)
 "  call Dret("s:NetrwCLeftmouse")
@@ -5706,6 +5725,9 @@ endfun
 " ---------------------------------------------------------------------
 " s:NetrwSLeftmouse: marks the file under the cursor.  May be dragged to select additional files {{{2
 fun! s:NetrwSLeftmouse(islocal)
+  if &ft != "netrw"
+   return
+  endif
 "  call Dfunc("s:NetrwSLeftmouse(islocal=".a:islocal.")")
 
   let s:ngw= s:NetrwGetWord()
@@ -6826,7 +6848,7 @@ fun! s:NetrwMarkFileCopy(islocal,...)
       NetrwKeepj call s:NetrwDelete(fname)
      endfor
      call s:NetrwLcd(curdir)
-     if v:version < 704 || !has("patch1109")
+     if v:version < 704 || (v:version == 704 && !has("patch1107"))
       call s:NetrwExe("sil !".g:netrw_localrmdir." ".s:ShellEscape(tmpdir,1))
       if v:shell_error != 0
        call netrw#ErrorMsg(s:WARNING,"consider setting g:netrw_localrmdir<".g:netrw_localrmdir."> to something that works",80)
@@ -9016,7 +9038,7 @@ fun! s:NetrwRefreshTreeDict(dir)
 "    call Decho("updating w:netrw_treedict[".direntry.']='.string(w:netrw_treedict[direntry]),'~'.expand("<slnum>"))
 
    else
-"    call Decho('not updating w:netrw_treedict['.direntry.'] with entry<'.entry.'> (no subtree)',,'~'.expand("<slnum>"))
+"    call Decho('not updating w:netrw_treedict['.string(direntry).'] with entry<'.string(entry).'> (no subtree)','~'.expand("<slnum>"))
    endif
   endfor
 "  call Dret("s:NetrwRefreshTreeDict")
@@ -10281,7 +10303,6 @@ fun! s:LocalBrowseRefresh()
 "   call Dret("s:LocalBrowseRefresh : don't refresh when focus not on netrw window")
    return
   endif
-  if winnr() == winnr("$") && winnr() == 1
   if exists("s:netrw_events") && s:netrw_events == 1
    " s:LocalFastBrowser gets called (indirectly) from a
    let s:netrw_events= 2
@@ -10307,6 +10328,8 @@ fun! s:LocalBrowseRefresh()
 "   call Decho("bufwinnr(".ibuf.") index(buftablist,".ibuf.")=".index(buftablist,ibuf),'~'.expand("<slnum>"))
    if bufwinnr(ibuf) == -1 && index(buftablist,ibuf) == -1
     " wipe out any non-displaying netrw buffer
+    " (ibuf not shown in a current window AND
+    "  ibuf not in any tab)
 "    call Decho("wiping  buf#".ibuf,"<".bufname(ibuf).">",'~'.expand("<slnum>"))
     exe "sil! keepj bd ".fnameescape(ibuf)
     call remove(s:netrw_browselist,ibl)
@@ -10787,7 +10810,7 @@ fun! s:NetrwLocalRmFile(path,fname,all)
    let rmfile= substitute(rmfile,'[\/]$','','e')
 
    if all || ok =~# 'y\%[es]' || ok == ""
-    if v:version < 704 || !has("patch1109")
+    if v:version < 704 || (v:version == 704 && !has("patch1107"))
 " "    call Decho("1st attempt: system(netrw#WinPath(".g:netrw_localrmdir.') '.s:ShellEscape(rmfile).')','~'.expand("<slnum>"))
      call system(netrw#WinPath(g:netrw_localrmdir).' '.s:ShellEscape(rmfile))
 " "    call Decho("v:shell_error=".v:shell_error,'~'.expand("<slnum>"))

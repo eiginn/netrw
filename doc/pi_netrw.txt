@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2016 Apr 20
+*pi_netrw.txt*  For Vim version 7.4.  Last change: 2016 May 26
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -1612,6 +1612,11 @@ A further approach is to delete files which match a pattern.
       This will cause the matching files to be marked.  Then,
       press "D".
 
+If your vim has 7.4 with patch#1107, then |g:netrw_localrmdir| no longer
+is used to remove directories; instead, vim's |delete()| is used with
+the "d" option.  Please note that only empty directories may be deleted
+with the "D" mapping.  Regular files are deleted with |delete()|, too.
+
 The |g:netrw_rm_cmd|, |g:netrw_rmf_cmd|, and |g:netrw_rmdir_cmd| variables are
 used to control the attempts to remove remote files and directories.  The
 g:netrw_rm_cmd is used with files, and its default value is:
@@ -2715,6 +2720,7 @@ your browsing preferences.  (see also: |netrw-settings|)
   *g:netrw_home*		The home directory for where bookmarks and
 				history are saved (as .netrwbook and
 				.netrwhist).
+				Netrw uses |expand()|on the string.
 				 default: the first directory on the
 				         |'runtimepath'|
 
@@ -2780,6 +2786,10 @@ your browsing preferences.  (see also: |netrw-settings|)
 				directory (|netrw-mt|, |netrw-mm|)
 
   *g:netrw_localrmdir*		remove directory command (rmdir)
+				This variable is only used if your vim is
+				earlier than 7.4 or if your vim doesn't
+				have patch#1107.  Otherwise, |delete()|
+				is used with the "d" option.
 				 default: "rmdir"
 
   *g:netrw_maxfilenamelen*	=32 by default, selected so as to make long
@@ -3773,6 +3783,16 @@ netrw:
 				  over all netrw buffers for changes needing
 				  refreshes.  However, inside a |:map-<expr>|,
 				  tab and window changes are disallowed.  Fixed.
+				  (affects netrw's s:LocalBrowseRefresh())
+				* |g:netrw_localrmdir| not used any more, but
+				  the relevant patch that causes |delete()| to
+				  take over was #1107 (not #1109).
+				* |expand()| is now used on |g:netrw_home|;
+				  consequently, g:netrw_home may now use
+				  environment variables
+				* s:NetrwLeftmouse and s:NetrwCLeftmouse will
+				  return without doing anything if invoked
+				  when inside a non-netrw window
 	v156:	Feb 18, 2016	* Changed =~ to =~# where appropriate
 		Feb 23, 2016	* s:ComposePath(base,subdir) now uses
 				  fnameescape() on the base portion
