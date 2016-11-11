@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.4.  Last change: 2016 May 26
+*pi_netrw.txt*  For Vim version 8.0.  Last change: 2016 Nov 10
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -212,7 +212,7 @@ EXTERNAL APPLICATIONS AND PROTOCOLS			*netrw-externapp* {{{2
           http:   g:netrw_http_cmd     = "fetch"      elseif fetch is available
 	  http:   *g:netrw_http_put_cmd* = "curl -T"
 	   rcp:   *g:netrw_rcp_cmd*      = "rcp"
-	 rsync:   *g:netrw_rsync_cmd*    = "rsync -a"
+	 rsync:   *g:netrw_rsync_cmd*    = "rsync"     (see |g:netrw_rsync_sep|)
 	   scp:   *g:netrw_scp_cmd*      = "scp -q"
 	  sftp:   *g:netrw_sftp_cmd*     = "sftp"
 	  file:   *g:netrw_file_cmd*     = "elinks" or "links"
@@ -868,9 +868,11 @@ variables listed below, and may be modified by the user.
     g:netrw_http_cmd     var   ="fetch -o"     if      fetch is available
     g:netrw_http_cmd     var   ="wget -O"      else if wget  is available
     g:netrw_http_put_cmd var   ="curl -T"
-    |g:netrw_list_cmd|    var   ="ssh USEPORT HOSTNAME ls -Fa"
+    |g:netrw_list_cmd|     var   ="ssh USEPORT HOSTNAME ls -Fa"
     g:netrw_rcp_cmd      var   ="rcp"
-    g:netrw_rsync_cmd    var   ="rsync -a"
+    g:netrw_rsync_cmd    var   ="rsync"
+    *g:netrw_rsync_sep*    var   ="/"            used to separate the hostname
+                                               from the file spec
     g:netrw_scp_cmd      var   ="scp -q"
     g:netrw_sftp_cmd     var   ="sftp" >
     -------------------------------------------------------------------------
@@ -1467,10 +1469,10 @@ changing the top of the tree listing.
 
 NETRW CLEAN					*netrw-clean* *:NetrwClean* {{{2
 
-With NetrwClean one may easily remove netrw from one's home directory;
+With :NetrwClean one may easily remove netrw from one's home directory;
 more precisely, from the first directory on your |'runtimepath'|.
 
-With NetrwClean!, netrw will attempt to remove netrw from all directories on
+With :NetrwClean!, netrw will attempt to remove netrw from all directories on
 your |'runtimepath'|.  Of course, you have to have write/delete permissions
 correct to do this.
 
@@ -1518,9 +1520,10 @@ will apply a special handler to it (like "x" works when in a netrw buffer).
 One may also use visual mode (see |visual-start|) to select the text that the
 special handler will use.  Normally gx uses expand("<cfile>") to pick up the
 text under the cursor; one may change what |expand()| uses via the
-|g:netrw_gx| variable.  Alternatively, one may select the text to be used by
-gx via first making a visual selection (see |visual-block|) or by changing
-the |'isfname'| option (which is global, so netrw doesn't modify it).
+|g:netrw_gx| variable (options include "<cword>", "<cWORD>").  Note that
+expand("<cfile>") depends on the |'isfname'| setting.  Alternatively, one may
+select the text to be used by gx by making a visual selection (see
+|visual-block|) and then pressing gx.
 
 Associated setting variables:
 	|g:netrw_gx|	control how gx picks up the text under the cursor
@@ -1680,16 +1683,17 @@ DIRECTORY EXPLORATION COMMANDS  {{{2
 	  The [N] specifies a |g:netrw_winsize| just for the new :Lexplore
 	  window.
 
-	  Those who like this method often also often like tree style displays;
+	  Those who like this method often also like tree style displays;
 	  see |g:netrw_liststyle|.
+
+:[N]Lexplore! [dir] is similar to :Lexplore, except that the full-height
+	  Explorer window will open on the right hand side and an
+	  uninitialized |g:netrw_chgwin| will be set to 1 (eg. edits will
+	  preferentially occur in the leftmost window).
 
 	  Also see: |netrw-C|           |g:netrw_browse_split|   |g:netrw_wiw|
 		    |netrw-p| |netrw-P|   |g:netrw_chgwin|
 		    |netrw-c-tab|       |g:netrw_winsize|
-
-:[N]Lexplore! is like :Lexplore, except that the full-height Explorer window
-	  will open on the right hand side and an uninitialized |g:netrw_chgwin|
-	  will be set to 1.
 
 						*netrw-:Sexplore*
 :[N]Sexplore will always split the window before invoking the local-directory
@@ -1852,9 +1856,11 @@ EXECUTING FILE UNDER CURSOR VIA SYSTEM()			*netrw-X* {{{2
 
 Pressing X while the cursor is atop an executable file will yield a prompt
 using the filename asking for any arguments.  Upon pressing a [return], netrw
-will then call |system()| with that command and arguments.  The result will
-be displayed by |:echomsg|, and so |:messages| will repeat display of the
-result.  Ansi escape sequences will be stripped out.
+will then call |system()| with that command and arguments.  The result will be
+displayed by |:echomsg|, and so |:messages| will repeat display of the result.
+Ansi escape sequences will be stripped out.
+
+See |cmdline-window| for directions for more on how to edit the arguments.
 
 
 FORCING TREATMENT AS A FILE OR DIRECTORY	*netrw-gd* *netrw-gf* {{{2
@@ -2136,6 +2142,7 @@ The following netrw maps make use of marked files:
     |netrw-mg|	Apply vimgrep to marked files
     |netrw-mm|	Move marked files to target
     |netrw-mp|	Print marked files
+    |netrw-ms|	Netrw will source marked files
     |netrw-mt|	Set target for |netrw-mm| and |netrw-mc|
     |netrw-mT|	Generate tags using marked files
     |netrw-mv|	Apply vim command to marked files
@@ -2210,6 +2217,9 @@ converts "*" into ".*" (see |regexp|) and marks files based on that.  In the
 future I may make it possible to use |regexp|s instead of glob()-style
 expressions (yet-another-option).
 
+See |cmdline-window| for directions on more on how to edit the regular
+expression.
+
 
 MARKED FILES, ARBITRARY VIM COMMAND				*netrw-mv*  {{{2
 	    (See |netrw-mf| and |netrw-mr| for how to mark files)
@@ -2223,8 +2233,9 @@ the local marked file list, individually:
 	* run vim command
 	* sil! keepalt wq!
 
-A prompt, "Enter vim command: ", will be issued to elicit the vim command
-you wish used.
+A prompt, "Enter vim command: ", will be issued to elicit the vim command you
+wish used.  See |cmdline-window| for directions for more on how to edit the
+command.
 
 
 MARKED FILES, ARBITRARY SHELL COMMAND				*netrw-mx* {{{2
@@ -2311,8 +2322,8 @@ One may also copy directories and their contents (local only) to a target
 directory.
 
 Associated setting variables:
-	|g:netrw_localcopycmd|
-	|g:netrw_localcopydircmd|
+	|g:netrw_localcopycmd|		|g:netrw_localcopycmdopt|
+	|g:netrw_localcopydircmd|	|g:netrw_localcopydircmdopt|
 	|g:netrw_ssh_cmd|
 
 MARKED FILES: DIFF						*netrw-md* {{{2
@@ -2560,8 +2571,8 @@ your browsing preferences.  (see also: |netrw-settings|)
 				    editing.  It will also use the specified tab
 				    and window numbers to perform editing
 				    (see |clientserver|, |netrw-ctrl-r|)
-				This option does not affect |:Lexplore|
-				windows.
+				This option does not affect the production of
+				|:Lexplore| windows.
 
 				Related topics:
 				    |g:netrw_alto|	|g:netrw_altv|
@@ -2741,7 +2752,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 default: (if ssh is executable)
 				          "ssh HOSTNAME ls -FLa"
 
- *g:netrw_list_cmd_options*	If this variable exists, then its contents are
+  *g:netrw_list_cmd_options*	If this variable exists, then its contents are
 				appended to the g:netrw_list_cmd.  For
 				example, use "2>/dev/null" to get rid of banner
 				messages on unix systems.
@@ -2767,30 +2778,52 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 let g:netrw_list_hide= netrw_gitignore#Hide().'.*\.swp$'
 				default: ""
 
-  *g:netrw_localcopycmd*	="cp" Linux/Unix/MacOS/Cygwin
-				="copy" Windows
+  *g:netrw_localcopycmd*	="cp"           Linux/Unix/MacOS/Cygwin
+				=expand("$COMSPEC")             Windows
 				Copies marked files (|netrw-mf|) to target
 				directory (|netrw-mt|, |netrw-mc|)
 
- *g:netrw_localcopydircmd*	="cp -R"	Linux/Unix/MacOS/Cygwin
-				="xcopy /e /c /h/ /i /k"	Windows
+  *g:netrw_localcopycmdopt*	=''             Linux/Unix/MacOS/Cygwin
+  				=' \c copy'                     Windows
+				Options for the |g:netrw_localcopycmd|
+
+  *g:netrw_localcopydircmd*	="cp"           Linux/Unix/MacOS/Cygwin
+ 				=expand("$COMSPEC")             Windows
 				Copies directories to target directory.
 				(|netrw-mc|, |netrw-mt|)
 
-  *g:netrw_localmkdir*		command for making a local directory
-				 default: "mkdir"
+  *g:netrw_localcopydircmdopt*	=" -R"          Linux/Unix/MacOS/Cygwin
+				=" /c xcopy /e /c /h/ /i /k"    Windows
+				Options for |g:netrw_localcopydircmd|
 
-  *g:netrw_localmovecmd*	="mv" Linux/Unix/MacOS/Cygwin
-				="move" Windows
+  *g:netrw_localmkdir*		="mkdir"        Linux/Unix/MacOS/Cygwin
+				=expand("$COMSPEC")             Windows
+                                command for making a local directory
+
+  *g:netrw_localmkdiropt*	=""             Linux/Unix/MacOS/Cygwin
+				=" /c mkdir"                    Windows
+				Options for |g:netrw_localmkdir|
+				 
+  *g:netrw_localmovecmd*	="mv"           Linux/Unix/MacOS/Cygwin
+				=expand("$COMSPEC")             Windows
 				Moves marked files (|netrw-mf|) to target
 				directory (|netrw-mt|, |netrw-mm|)
 
-  *g:netrw_localrmdir*		remove directory command (rmdir)
+  *g:netrw_localmovecmdopt*	=""             Linux/Unix/MacOS/Cygwin
+				=" /c move"                     Windows
+				Options for |g:netrw_localmovecmd|
+
+  *g:netrw_localrmdir*		="rmdir"        Linux/Unix/MacOS/Cygwin  
+ 				=expand("$COMSPEC")             Windows
+				Remove directory command (rmdir)
 				This variable is only used if your vim is
 				earlier than 7.4 or if your vim doesn't
 				have patch#1107.  Otherwise, |delete()|
 				is used with the "d" option.
-				 default: "rmdir"
+
+  *g:netrw_localrmdiropt*	=""             Linux/Unix/MacOS/Cygwin
+				=" /c rmdir"                    Windows
+				Options for |g:netrw_localrmdir|
 
   *g:netrw_maxfilenamelen*	=32 by default, selected so as to make long
 				    listings fit on 80 column displays.
@@ -2903,17 +2936,23 @@ your browsing preferences.  (see also: |netrw-settings|)
 					netrwTilde   : *
 					netrwTmp     : tmp* *tmp
 
-				These syntax highlighting groups are linked
-				to Folded or DiffChange by default
-				(see |hl-Folded| and |hl-DiffChange|), but
-				one may put lines like >
+				In addition, those groups mentioned in
+				|'suffixes'| are also added to the special
+				file highlighting group.
+				 These syntax highlighting groups are linked
+				to netrwGray or Folded by default
+				(see |hl-Folded|), but one may put lines like >
 					hi link netrwCompress Visual
 <				into one's <.vimrc> to use one's own
 				preferences.  Alternatively, one may
-				put such specifications into
-				.vim/after/syntax/netrw.vim.
-
-				As an example, I myself use a dark-background
+				put such specifications into >
+					.vim/after/syntax/netrw.vim.
+<				 The netrwGray highlighting is set up by
+				netrw when >
+	       				* netrwGray has not been previously
+					  defined
+					* the gui is running
+<				 As an example, I myself use a dark-background
 				colorscheme with the following in
 				.vim/after/syntax/netrw.vim: >
 
@@ -3148,8 +3187,8 @@ If there are no marked files: (see |netrw-mf|)
 
     Renaming files and directories involves moving the cursor to the
     file/directory to be moved (renamed) and pressing "R".  You will then be
-    queried for what you want the file/directory to be renamed to  You may select
-    a range of lines with the "V" command (visual selection), and then
+    queried for what you want the file/directory to be renamed to.  You may
+    select a range of lines with the "V" command (visual selection), and then
     press "R"; you will be queried for each file as to what you want it
     renamed to.
 
@@ -3184,13 +3223,17 @@ If there are marked files:  (see |netrw-mf|)
     the copy fails and the delete does not, you may lose the file.
     Use at your own risk.
 
-The g:netrw_rename_cmd variable is used to implement remote renaming.  By
-default its value is:
+The *g:netrw_rename_cmd* variable is used to implement remote renaming.  By
+default its value is: >
 
 	ssh HOSTNAME mv
-
+<
 One may rename a block of files and directories by selecting them with
-V (|linewise-visual|) when using thin style
+V (|linewise-visual|) when using thin style.
+
+See |cmdline-editing| for more on how to edit the command line; in particular,
+you'll find <ctrl-f> (initiates cmdline window editing) and <ctrl-c> (uses the
+command line under the cursor) useful in conjunction with the R command.
 
 
 SELECTING SORTING STYLE			*netrw-s* *netrw-sort* {{{2
@@ -3211,8 +3254,8 @@ number.  Subsequent selection of a file to edit (|netrw-cr|) will use that
 window.
 
 	* C : by itself, will select the current window holding a netrw buffer
-	  for editing via |netrw-cr|.  The C mapping is only available while in
-	  netrw buffers.
+	  for subsequent editing via |netrw-cr|.  The C mapping is only available
+	  while in netrw buffers.
 
 	* [count]C : the count will be used as the window number to be used
 	  for subsequent editing via |netrw-cr|.
@@ -3225,7 +3268,7 @@ window.
 Using >
 	let g:netrw_chgwin= -1
 will restore the default editing behavior
-(ie. editing will use the current window).
+(ie. subsequent editing will use the current window).
 
 Related topics:			|netrw-cr| |g:netrw_browse_split|
 Associated setting variables:	|g:netrw_chgwin|
@@ -3246,9 +3289,9 @@ only if your terminal supports differentiating <c-tab> from a plain
 
   * Else bring up a |:Lexplore| window
 
-If |g:netrw_usetab| exists or is zero, or if there is a pre-existing mapping
+If |g:netrw_usetab| exists and is zero, or if there is a pre-existing mapping
 for <c-tab>, then the <c-tab> will not be mapped.  One may map something other
-than a <c-tab>, too: (but you'll still need to have had g:netrw_usetab set) >
+than a <c-tab>, too: (but you'll still need to have had |g:netrw_usetab| set). >
 
 	nmap <unique> (whatever)	<Plug>NetrwShrink
 <
@@ -3775,6 +3818,20 @@ netrw:
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v162:	Sep 19, 2016	* (haya14busa) pointed out two syntax errors
+				  with a patch; these are now fixed.
+		Oct 26, 2016	* I started using mate-terminal and found that
+				  x and gx (|netrw-x| and |netrw-gx|) were no
+				  longer working.  Fixed (using atril when
+				  $DESKTOP_SESSION is "mate").
+		Nov 04, 2016	* (Martin Vuille) pointed out that @+ was
+				  being restored with keepregstar rather than
+				  keepregplus.
+		Nov 09, 2016	* Broke apart the command from the options,
+				  mostly for Windows.  Introduced new netrw
+				  settings: |g:netrw_localcopycmdopt|
+				  |g:netrw_localcopydircmdopt| |g:netrw_localmkdiropt|
+				  |g:netrw_localmovecmdopt| |g:netrw_localrmdiropt|
 	v157:	Apr 20, 2016	* (Nicola) had set up a "nmap <expr> ..." with
 				  a function that returned a 0 while silently
 				  invoking a shell command.  The shell command
@@ -3793,6 +3850,20 @@ netrw:
 				* s:NetrwLeftmouse and s:NetrwCLeftmouse will
 				  return without doing anything if invoked
 				  when inside a non-netrw window
+		Jun 15, 2016	* gx now calls netrw#GX() which returns
+				  the word under the cursor.  The new
+				  wrinkle: if one is in a netrw buffer,
+				  then netrw's s:NetrwGetWord().
+		Jun 22, 2016	* Netrw was executing all its associated
+				  Filetype commands silently; I'm going
+				  to try doing that "noisily" and see if
+				  folks have a problem with that.
+		Aug 12, 2016	* Changed order of tool selection for
+				  handling http://... viewing.
+				  (Nikolay Aleksandrovich Pavlov)
+		Aug 21, 2016	* Included hiding/showing/all for tree
+				  listings
+				* Fixed refresh (^L) for tree listings
 	v156:	Feb 18, 2016	* Changed =~ to =~# where appropriate
 		Feb 23, 2016	* s:ComposePath(base,subdir) now uses
 				  fnameescape() on the base portion
