@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 8.0.  Last change: 2016 Nov 10
+*pi_netrw.txt*  For Vim version 8.0.  Last change: 2017 Jan 13
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -1079,9 +1079,9 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	 <c-r>	Browse using a gvim server                           |netrw-ctrl-r|
 	 <c-tab> Shrink/expand a netrw/explore window                |netrw-c-tab|
 	   -	Makes Netrw go up one directory                      |netrw--|
-	   a	Toggles between normal display,                      |netrw-a|
+	   a	Cycles between normal display,                       |netrw-a|
 	    	hiding (suppress display of files matching g:netrw_list_hide)
-	    	showing (display only files which match g:netrw_list_hide)
+	    	and showing (display only files which match g:netrw_list_hide)
 	   c	Make browsing directory the current directory        |netrw-c|
 	   C	Setting the editing window                           |netrw-C|
 	   d	Make a directory                                     |netrw-d|
@@ -1092,6 +1092,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   gh	Quick hide/unhide of dot-files                       |netrw-gh|
 	   gn	Make top of tree the directory below the cursor      |netrw-gn|
 	   i	Cycle between thin, long, wide, and tree listings    |netrw-i|
+	   I	Toggle the displaying of the banner                  |netrw-I|
 	   mb	Bookmark current directory                           |netrw-mb|
 	   mc	Copy marked files to marked-file target directory    |netrw-mc|
 	   md	Apply diff to marked files (up to 3)                 |netrw-md|
@@ -1171,25 +1172,26 @@ QUICK REFERENCE: COMMANDS	*netrw-explore-cmds* *netrw-browse-cmds* {{{2
 
 BANNER DISPLAY						*netrw-I*
 
-One may toggle the banner display on and off by pressing "I".
+One may toggle the displaying of the banner by pressing "I".
 
 Also See: |g:netrw_banner|
 
 
-BOOKMARKING A DIRECTORY *netrw-mb* *netrw-bookmark* *netrw-bookmarks* {{{2
+BOOKMARKING A DIRECTORY		*netrw-mb* *netrw-bookmark* *netrw-bookmarks* {{{2
 
 One may easily "bookmark" the currently browsed directory by using >
 
 	mb
 <
 								*.netrwbook*
-Bookmarks are retained in between sessions in a $HOME/.netrwbook file, and are
-kept in sorted order.
+Bookmarks are retained in between sessions of vim in a file called .netrwbook
+as a |List|, which is typically stored in the first directory on the user's
+'|runtimepath|'; entries are kept in sorted order.
 
 If there are marked files and/or directories, mb will add them to the bookmark
 list.
 
-*netrw-:NetrwMB*
+								*netrw-:NetrwMB*
 Addtionally, one may use :NetrwMB to bookmark files or directories. >
 
 	:NetrwMB[!] [files/directories]
@@ -1420,15 +1422,15 @@ Related Topics:
 
 CHANGING TO A PREDECESSOR DIRECTORY		*netrw-u* *netrw-updir* {{{2
 
-Every time you change to a new directory (new for the current session),
-netrw will save the directory in a recently-visited directory history
-list (unless |g:netrw_dirhistmax| is zero; by default, it's ten).  With the
-"u" map, one can change to an earlier directory (predecessor).  To do
-the opposite, see |netrw-U|.
+Every time you change to a new directory (new for the current session), netrw
+will save the directory in a recently-visited directory history list (unless
+|g:netrw_dirhistmax| is zero; by default, it holds ten entries).  With the "u"
+map, one can change to an earlier directory (predecessor).  To do the
+opposite, see |netrw-U|.
 
-The "u" map also accepts counts to go back in the history several slots.
-For your convenience, qb (see |netrw-qb|) lists the history number which may
-be used in that count.
+The "u" map also accepts counts to go back in the history several slots.  For
+your convenience, qb (see |netrw-qb|) lists the history number which may be
+used in that count.
 
 						*.netrwhist*
 See |g:netrw_dirhistmax| for how to control the quantity of history stack
@@ -3220,7 +3222,7 @@ If there are marked files:  (see |netrw-mf|)
 
     Note that moving files is a dangerous operation; copies are safer.  That's
     because a "move" for remote files is actually a copy + delete -- and if
-    the copy fails and the delete does not, you may lose the file.
+    the copy fails and the delete succeeds you may lose the file.
     Use at your own risk.
 
 The *g:netrw_rename_cmd* variable is used to implement remote renaming.  By
@@ -3327,6 +3329,7 @@ The user function is passed one argument; it resembles >
 where a:islocal is 1 if its a local-directory system call or 0 when
 remote-directory system call.
 
+			        *netrw-call*  *netrw-expose*  *netrw-modify*
 Use netrw#Expose("varname")          to access netrw-internal (script-local)
 				     variables.
 Use netrw#Modify("varname",newvalue) to change netrw-internal variables.
@@ -3832,6 +3835,34 @@ netrw:
 				  settings: |g:netrw_localcopycmdopt|
 				  |g:netrw_localcopydircmdopt| |g:netrw_localmkdiropt|
 				  |g:netrw_localmovecmdopt| |g:netrw_localrmdiropt|
+		Nov 21, 2016	* (mattn) provided a patch for preview; swapped
+				  winwidth() with winheight()
+		Nov 22, 2016	* (glacambre) reported that files containing
+				  spaces weren't being obtained properly via
+				  scp.  Fix: apparently using single quotes
+				  such as with 'file name' wasn't enough; the
+				  spaces inside the quotes also had to be
+				  escaped (ie. 'file\ name').
+				* Also fixed obtain (|netrw-O|) to be able to
+				  obtain files with spaces in their names
+		Dec 20, 2016	* (xc1427) Reported that using "I" (|netrw-I|)
+				  when atop "Hiding" in the banner also caused
+				  the active-banner hiding control to occur
+		Jan 03, 2017	* (Enno Nagel) reported that attempting to
+				  apply netrw to a directory that was without
+				  read permission caused a syntax error.
+		Jan 13, 2017	* (Ingo Karkat) provided a patch which makes
+				  using netrw#Call() better.  Now returns
+				  value of internal routines return, for example.
+		Jan 13, 2017	* (Ingo Karkat) changed netrw#FileUrlRead to
+				  use |:edit| instead of |:read|.  I also
+				  changed the routine name to netrw#FileUrlEdit.
+		Jan 16, 2017	* (Sayem) reported a problem where :Lexplore
+				  could generate a new listing buffer and
+				  window instead of toggling the netrw display.
+				  Unfortunately, the directions for eliciting
+				  the problem weren't complete, so I may or
+				  may not have fixed that issue.
 	v157:	Apr 20, 2016	* (Nicola) had set up a "nmap <expr> ..." with
 				  a function that returned a 0 while silently
 				  invoking a shell command.  The shell command
