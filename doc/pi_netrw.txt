@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 8.0.  Last change: 2017 Jan 13
+*pi_netrw.txt*  For Vim version 8.0.  Last change: 2017 Nov 03
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -6,7 +6,7 @@
 Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 
-Copyright: Copyright (C) 2016 Charles E Campbell    *netrw-copyright*
+Copyright: Copyright (C) 2017 Charles E Campbell    *netrw-copyright*
 	The VIM LICENSE applies to the files in this package, including
 	netrw.vim, pi_netrw.txt, netrwFileHandlers.vim, netrwSettings.vim, and
 	syntax/netrw.vim.  Like anything else that's free, netrw.vim and its
@@ -16,7 +16,6 @@ Copyright: Copyright (C) 2016 Charles E Campbell    *netrw-copyright*
 	using this plugin, you agree that in no event will the copyright
 	holder be liable for any damages resulting from the use of this
 	software. Use at your own risk!
-
 
 		*netrw*
 		*dav*    *ftp*    *netrw-file*  *rcp*    *scp*
@@ -73,7 +72,7 @@ Copyright: Copyright (C) 2016 Charles E Campbell    *netrw-copyright*
       Improving Browsing..................................|netrw-ssh-hack|
       Listing Bookmarks And History.......................|netrw-qb|
       Making A New Directory..............................|netrw-d|
-      Making The Browsing Directory The Current Directory.|netrw-c|
+      Making The Browsing Directory The Current Directory.|netrw-cd|
       Marking Files.......................................|netrw-mf|
       Unmarking Files.....................................|netrw-mF|
       Marking Files By Location List......................|netrw-qL|
@@ -83,6 +82,7 @@ Copyright: Copyright (C) 2016 Charles E Campbell    *netrw-copyright*
       Marked Files: Arbitrary Shell Command, En Bloc......|netrw-mX|
       Marked Files: Arbitrary Vim Command.................|netrw-mv|
       Marked Files: Argument List.........................|netrw-ma| |netrw-mA|
+      Marked Files: Buffer List...........................|netrw-cb| |netrw-cB|
       Marked Files: Compression And Decompression.........|netrw-mz|
       Marked Files: Copying...............................|netrw-mc|
       Marked Files: Diff..................................|netrw-md|
@@ -155,7 +155,7 @@ Windows' ftp doesn't support .netrc; however, one may have in one's .vimrc:  >
 
    let g:netrw_ftp_cmd= 'c:\Windows\System32\ftp -s:C:\Users\MyUserName\MACHINE'
 <
-Netrw will substitute the host's machine name for "MACHINE" from the url it is
+Netrw will substitute the host's machine name for "MACHINE" from the URL it is
 attempting to open, and so one may specify >
 	userid
 	password
@@ -223,7 +223,7 @@ EXTERNAL APPLICATIONS AND PROTOCOLS			*netrw-externapp* {{{2
 
 		    elinks : "-source >"
 		    links  : "-dump >"
-		    curl   : "-o"
+		    curl   : "-L -o"
 		    wget   : "-q -O"
 		    fetch  : "-o"
 <
@@ -238,7 +238,7 @@ EXTERNAL APPLICATIONS AND PROTOCOLS			*netrw-externapp* {{{2
 
 READING						*netrw-read* *netrw-nread* {{{2
 
-	Generally, one may just use the url notation with a normal editing
+	Generally, one may just use the URL notation with a normal editing
 	command, such as >
 
 		:e ftp://[user@]machine/path
@@ -260,7 +260,7 @@ READING						*netrw-read* *netrw-nread* {{{2
 
 WRITING					*netrw-write* *netrw-nwrite* {{{2
 
-	One may just use the url notation with a normal file writing
+	One may just use the URL notation with a normal file writing
 	command, such as >
 
 		:w ftp://[user@]machine/path
@@ -281,7 +281,7 @@ WRITING					*netrw-write* *netrw-nwrite* {{{2
 
 SOURCING					*netrw-source* {{{2
 
-	One may just use the url notation with the normal file sourcing
+	One may just use the URL notation with the normal file sourcing
 	command, such as >
 
 		:so ftp://[user@]machine/path
@@ -479,7 +479,7 @@ file using root-relative paths, use the full path:
 ==============================================================================
 4. Network-Oriented File Transfer			*netrw-xfer* {{{1
 
-Network-oriented file transfer under Vim is implemented by a VimL-based script
+Network-oriented file transfer under Vim is implemented by a vim script
 (<netrw.vim>) using plugin techniques.  It currently supports both reading and
 writing across networks using rcp, scp, ftp or ftp+<.netrc>, scp, fetch,
 dav/cadaver, rsync, or sftp.
@@ -734,11 +734,11 @@ such as netrw.
 The usual read/write commands are supported.  There are also a few
 additional commands available.  Often you won't need to use Nwrite or
 Nread as shown in |netrw-transparent| (ie. simply use >
-  :e url
-  :r url
-  :w url
+  :e URL
+  :r URL
+  :w URL
 instead, as appropriate) -- see |netrw-urls|.  In the explanations
-below, a {netfile} is an url to a remote file.
+below, a {netfile} is a URL to a remote file.
 
 						*:Nwrite*  *:Nw*
 :[range]Nw[rite]	Write the specified lines to the current
@@ -1009,7 +1009,7 @@ where [protocol] is typically scp or ftp.  As an example, try: >
 	vim ftp://ftp.home.vim.org/pub/vim/
 <
 For local directories, the trailing slash is not required.  Again, because it's
-easy to miss: to browse remote directories, the url must terminate with a
+easy to miss: to browse remote directories, the URL must terminate with a
 slash!
 
 If you'd like to avoid entering the password repeatedly for remote directory
@@ -1506,7 +1506,7 @@ Netrw determines which special handler by the following method:
     If g:netrw_browsex_viewer == '-', then netrwFileHandlers#Invoke() will be
     used instead (see |netrw_filehandler|).
 
-  * for Windows 32 or 64, the url and FileProtocolHandler dlls are used.
+  * for Windows 32 or 64, the URL and FileProtocolHandler dlls are used.
   * for Gnome (with gnome-open): gnome-open is used.
   * for KDE (with kfmclient)   : kfmclient is used
   * for Mac OS X               : open is used.
@@ -2085,7 +2085,7 @@ Associated setting variables:	|g:netrw_localmkdir|   |g:netrw_mkdir_cmd|
 				|g:netrw_remote_mkdir| |netrw-%|
 
 
-MAKING THE BROWSING DIRECTORY THE CURRENT DIRECTORY	*netrw-c* {{{2
+MAKING THE BROWSING DIRECTORY THE CURRENT DIRECTORY	*netrw-cd* {{{2
 
 By default, |g:netrw_keepdir| is 1.  This setting means that the current
 directory will not track the browsing directory. (done for backwards
@@ -2099,6 +2099,9 @@ maintains its own separate notion of the current directory, in order to make
 the two directories the same, use the "c" map (just type c).  That map will
 set Vim's notion of the current directory to netrw's current browsing
 directory.
+
+*netrw-c* : This map's name has been changed from "c" to cd (see |netrw-cd|).
+          This change was done to allow for |netrw-cb| and |netrw-cB| maps.
 
 Associated setting variable: |g:netrw_keepdir|
 
@@ -2288,7 +2291,17 @@ MARKED FILES: ARGUMENT LIST				*netrw-ma* *netrw-mA*
 Using ma, one moves filenames from the marked file list to the argument list.
 Using mA, one moves filenames from the argument list to the marked file list.
 
-See Also: |netrw-qF| |argument-list| |:args|
+See Also: |netrw-cb| |netrw-cB| |netrw-qF| |argument-list| |:args|
+
+
+MARKED FILES: BUFFER LIST				*netrw-cb* *netrw-cB*
+	    (See |netrw-mf| and |netrw-mr| for how to mark files)
+		      (uses the global marked-file list)
+
+Using cb, one moves  filenames from the marked file list to the buffer list.
+Using cB, one copies filenames from the buffer list to the marked file list.
+
+See Also: |netrw-ma| |netrw-mA| |netrw-qF| |buffer-list| |:buffers|
 
 
 MARKED FILES: COMPRESSION AND DECOMPRESSION		*netrw-mz* {{{2
@@ -2470,8 +2483,8 @@ When a remote set of files are tagged, the resulting tags file is "obtained";
 ie. a copy is transferred to the local system's directory.  The now local tags
 file is then modified so that one may use it through the network.  The
 modification made concerns the names of the files in the tags; each filename is
-preceded by the netrw-compatible url used to obtain it.  When one subsequently
-uses one of the go to tag actions (|tags|), the url will be used by netrw to
+preceded by the netrw-compatible URL used to obtain it.  When one subsequently
+uses one of the go to tag actions (|tags|), the URL will be used by netrw to
 edit the desired file and go to the tag.
 
 Associated setting variables: |g:netrw_ctags| |g:netrw_ssh_cmd|
@@ -2805,7 +2818,7 @@ your browsing preferences.  (see also: |netrw-settings|)
   *g:netrw_localmkdiropt*	=""             Linux/Unix/MacOS/Cygwin
 				=" /c mkdir"                    Windows
 				Options for |g:netrw_localmkdir|
-				 
+
   *g:netrw_localmovecmd*	="mv"           Linux/Unix/MacOS/Cygwin
 				=expand("$COMSPEC")             Windows
 				Moves marked files (|netrw-mf|) to target
@@ -2815,7 +2828,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				=" /c move"                     Windows
 				Options for |g:netrw_localmovecmd|
 
-  *g:netrw_localrmdir*		="rmdir"        Linux/Unix/MacOS/Cygwin  
+  *g:netrw_localrmdir*		="rmdir"        Linux/Unix/MacOS/Cygwin
  				=expand("$COMSPEC")             Windows
 				Remove directory command (rmdir)
 				This variable is only used if your vim is
@@ -3863,6 +3876,28 @@ netrw:
 				  Unfortunately, the directions for eliciting
 				  the problem weren't complete, so I may or
 				  may not have fixed that issue.
+		Feb 06, 2017	* Implemented cb and cB.  Changed "c" to "cd".
+				  (see |netrw-cb|, |netrw-cB|, and |netrw-cd|)
+		Mar 21, 2017	* previously, netrw would specify (safe) settings
+				  even when the setting was already safe for
+				  netrw.  Netrw now attempts to leave such
+				  already-netrw-safe settings alone.
+				  (affects s:NetrwOptionRestore() and
+				  s:NetrwSafeOptions(); also introduced
+				  s:NetrwRestoreSetting())
+		Jun 26, 2017	* (Christian Brabandt) provided a patch to
+				  allow curl to follow redirects (ie. -L
+				  option)
+		Jun 26, 2017	* (Callum Howard) reported a problem with
+				  :Lexpore not removing the Lexplore window
+				  after a change-directory
+		Aug 30, 2017	* (Ingo Karkat) one cannot switch to the
+				  previously edited file (e.g. with CTRL-^)
+				  after editing a file:// URL.  Patch to
+				  have a "keepalt" included.
+		Oct 17, 2017	* (Adam Faryna) reported that gn (|netrw-gn|)
+				  did not work on directories in the current
+				  tree
 	v157:	Apr 20, 2016	* (Nicola) had set up a "nmap <expr> ..." with
 				  a function that returned a 0 while silently
 				  invoking a shell command.  The shell command
@@ -3926,9 +3961,9 @@ netrw:
 				  tell me how they're useful and should be
 				  retained?
 		Nov 20, 2015	* Added |netrw-ma| and |netrw-mA| support
-		Nov 20, 2015	* gx (|netrw-gx|) on an url downloaded the
+		Nov 20, 2015	* gx (|netrw-gx|) on a URL downloaded the
 				  file in addition to simply bringing up the
-				  url in a browser.  Fixed.
+				  URL in a browser.  Fixed.
 		Nov 23, 2015	* Added |g:netrw_sizestyle| support
 		Nov 27, 2015	* Inserted a lot of <c-u>s into various netrw
 				  maps.

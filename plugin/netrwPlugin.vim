@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v162j"
+let g:loaded_netrwPlugin = "v162"
 let s:keepcpo = &cpo
 set cpo&vim
 "DechoRemOn
@@ -59,7 +59,7 @@ com! -count=1 -nargs=*	Nread		let s:svpos= winsaveview()<bar>call netrw#NetRead(
 com! -range=% -nargs=*	Nwrite		let s:svpos= winsaveview()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call winrestview(s:svpos)
 com! -nargs=*		NetUserPass	call NetUserPass(<f-args>)
 com! -nargs=*	        Nsource		let s:svpos= winsaveview()<bar>call netrw#NetSource(<f-args>)<bar>call winrestview(s:svpos)
-com! -nargs=?		Ntree		call netrw#SetTreetop(<q-args>)
+com! -nargs=?		Ntree		call netrw#SetTreetop(1,<q-args>)
 
 " Commands: :Explore, :Sexplore, Hexplore, Vexplore, Lexplore {{{2
 com! -nargs=* -bar -bang -count=0 -complete=dir	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
@@ -129,19 +129,15 @@ fun! s:LocalBrowse(dirname)
   elseif isdirectory(a:dirname)
 "   call Decho("(LocalBrowse) dirname<".a:dirname."> ft=".&ft."  (isdirectory, not amiga)")
 "   call Dredir("LocalBrowse ft last set: ","verbose set ft")
-"   call Decho("(s:LocalBrowse) COMBAK#23: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    sil! call netrw#LocalBrowseCheck(a:dirname)
-"   call Decho("(s:LocalBrowse) COMBAK#24: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    if exists("w:netrw_bannercnt") && line('.') < w:netrw_bannercnt
     exe w:netrw_bannercnt
-"    call Decho("(s:LocalBrowse) COMBAK#25: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
    endif
 
   else
    " not a directory, ignore it
 "   call Decho("(LocalBrowse) dirname<".a:dirname."> not a directory, ignoring...")
   endif
-"  call Decho("(s:LocalBrowse) COMBAK#26: buf#".bufnr("%")." file<".expand("%")."> line#".line(".")." col#".col("."))
 
 "  call Dret("s:LocalBrowse")
 endfun
