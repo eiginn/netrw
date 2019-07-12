@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 8.0.  Last change: 2018 May 16
+*pi_netrw.txt*  For Vim version 8.1.  Last change: 2019 Mar 13
 
 	    ------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell
@@ -2096,7 +2096,7 @@ track netrw's browsing directory.
 
 However, given the default setting for g:netrw_keepdir of 1 where netrw
 maintains its own separate notion of the current directory, in order to make
-the two directories the same, use the "c" map (just type c).  That map will
+the two directories the same, use the "cd" map (type cd).  That map will
 set Vim's notion of the current directory to netrw's current browsing
 directory.
 
@@ -2741,7 +2741,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				=0 : show all
 				=1 : show not-hidden files
 				=2 : show hidden files only
-				 default: =0
+				 default: =1
 
   *g:netrw_home*		The home directory for where bookmarks and
 				history are saved (as .netrwbook and
@@ -2942,14 +2942,23 @@ your browsing preferences.  (see also: |netrw-settings|)
 
 					netrwBak     : *.bak
 					netrwCompress: *.gz *.bz2 *.Z *.zip
+					netrwCoreDump: core.\d\+
 					netrwData    : *.dat
+					netrwDoc     : *.doc,*.txt,*.pdf,
+					               *.pdf,*.docx
 					netrwHdr     : *.h
+					netrwLex     : *.l *.lex
 					netrwLib     : *.a *.so *.lib *.dll
 					netrwMakefile: [mM]akefile *.mak
 					netrwObj     : *.o *.obj
+					netrwPix     : *.bmp,*.fit,*.fits,*.gif,
+					               *.jpg,*.jpeg,*.pcx,*.ppc
+					               *.pgm,*.png,*.psd,*.rgb
+					               *.tif,*.xbm,*.xcf
 					netrwTags    : tags ANmenu ANtags
 					netrwTilde   : *
 					netrwTmp     : tmp* *tmp
+					netrwYacc    : *.y
 
 				In addition, those groups mentioned in
 				|'suffixes'| are also added to the special
@@ -3842,6 +3851,9 @@ netrw:
 				* Hopefully I fixed a nasty bug that caused a
 				  file rename to wipe out a buffer that it
 				  should not have wiped out.
+				* (Holger Mitschke) amended this help file
+				  with additional |g:netrw_special_syntax|
+				  items
 	v162:	Sep 19, 2016	* (haya14busa) pointed out two syntax errors
 				  with a patch; these are now fixed.
 		Oct 26, 2016	* I started using mate-terminal and found that
