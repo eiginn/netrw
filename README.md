@@ -2,7 +2,7 @@
 __Mirror__ of Dr. Chip's netrw vim plugin for vundle
 http://www.drchip.org/astronaut/vim/index.html#NETRW
 
-Updated Nov 06, 2019 (v166)
+Updated Dec 15, 2020 (171e)
 
 ### From the site: ###
 Supports network-oriented editing with urls. One may read and write files using one of several supported protocols
